@@ -1,7 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const app = express();
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // Middleware
 app.use("/", (req, res, next) => {
@@ -10,7 +12,7 @@ app.use("/", (req, res, next) => {
 
 // Connect to MongoDB and start server
 mongoose
-  .connect("mongodb+srv://admin:123@cluster0.ra510.mongodb.net/", {
+  .connect(MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
