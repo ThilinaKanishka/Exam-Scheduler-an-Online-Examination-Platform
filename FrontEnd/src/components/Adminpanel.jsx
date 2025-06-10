@@ -1,13 +1,13 @@
 import React from "react";
-import ClientHeader from "./ClientHeader";
-import ClientFooter from "./ClientFooter";
+import AdminPanelHeader from "./AdminPanelHeader";
+import AdminPanelFooter from "./AdminPanelFooter"; // <-- Added import
 
 function Adminpanel() {
   return (
     <div>
-      <ClientHeader />
+      <AdminPanelHeader />
       <h1>This Is Admin Panel</h1>
-      <ClientFooter />
+      <AdminPanelFooter /> {/* <-- Fixed typo here */}
     </div>
   );
 }
