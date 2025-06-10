@@ -9,8 +9,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Registration />} />
-        <Route path="/login" element={<Logging />} />
+        <Route path="/Registration" element={<Registration />} />
+        <Route path="/" element={<Logging />} />
         <Route path="/Home" element={<Home />} />
         <Route path="/Adminpanel" element={<Adminpanel />} />
         {/* Add student and admin dashboards here */}

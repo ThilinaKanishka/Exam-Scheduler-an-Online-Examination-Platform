@@ -22,7 +22,7 @@ function Registration() {
     try {
       await axios.post("http://localhost:5000/api/register", form);
       alert("Registered Successfully");
-      navigate("/login"); // ✅ redirect to login page
+      navigate("/"); // ✅ redirect to login page
     } catch (error) {
       alert(error.response?.data?.message || "Registration failed");
     }
