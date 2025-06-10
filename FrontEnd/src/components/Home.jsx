@@ -11,6 +11,7 @@ import {
   FiChevronRight,
 } from "react-icons/fi";
 import { FaGraduationCap, FaChalkboardTeacher } from "react-icons/fa";
+import ClientFooter from "./ClientFooter";
 
 // Animation variants
 const container = {
@@ -439,6 +440,7 @@ function Home() {
           </div>
         </motion.div>
       </section>
+      <ClientFooter />
     </div>
   );
 }
