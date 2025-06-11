@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   FiCalendar,
@@ -45,6 +45,25 @@ const fadeIn = {
 };
 
 function Home() {
+  // Hero images array
+  const heroImages = [
+    "https://images.unsplash.com/photo-1588072432836-e10032774350?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+  ];
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Auto-rotate images every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) =>
+        prevIndex === heroImages.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
+
   const features = [
     {
       icon: <FiCalendar className="w-12 h-12" />,
@@ -185,12 +204,31 @@ function Home() {
                 transition={{ duration: 0.8, delay: 0.4 }}
                 className="absolute -inset-4 bg-indigo-100 rounded-2xl blur-lg"
               />
-              <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden w-full">
-                <img
-                  src="https://images.unsplash.com/photo-1588072432836-e10032774350?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+              <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden w-full h-96">
+                <motion.img
+                  key={currentImageIndex}
+                  src={heroImages[currentImageIndex]}
                   alt="Dashboard preview"
-                  className="w-full h-auto object-cover"
+                  className="w-full h-full object-cover"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 1 }}
                 />
+              </div>
+              {/* Image indicators */}
+              <div className="flex justify-center mt-4 space-x-2">
+                {heroImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-3 h-3 rounded-full transition-colors ${
+                      index === currentImageIndex
+                        ? "bg-indigo-600"
+                        : "bg-gray-300"
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
               </div>
             </motion.div>
           </motion.div>
