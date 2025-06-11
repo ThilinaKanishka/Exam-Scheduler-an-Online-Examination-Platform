@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import { FaGraduationCap, FaChalkboardTeacher } from "react-icons/fa";
 import ClientFooter from "./ClientFooter";
+import ClientHeader from "./ClientHeader";
 
 // Animation variants
 const container = {
@@ -127,6 +128,7 @@ function Home() {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-blue-50 to-indigo-100">
+      <ClientHeader />
       {/* Hero Section */}
       <section className="w-full py-20 px-4 sm:px-6 lg:px-8 mx-auto">
         <motion.div
