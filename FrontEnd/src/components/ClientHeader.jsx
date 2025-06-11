@@ -214,7 +214,7 @@ function ClientHeader() {
         </Avatar>
         <Box>
           <Typography variant="subtitle1" fontWeight="medium">
-            John Doe
+            Thilina Hettiarachchci
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Student
@@ -502,7 +502,7 @@ function ClientHeader() {
                       mr: 1,
                     }}
                   >
-                    JD
+                    TH
                   </Avatar>
                   <ChevronDownIcon
                     sx={{

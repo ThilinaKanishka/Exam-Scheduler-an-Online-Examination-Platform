@@ -1,39 +1,185 @@
 import React, { useState } from "react";
 import {
-  FaBars,
-  FaTimes,
-  FaUserCog,
-  FaBell,
-  FaEnvelope,
-  FaChartLine,
-  FaCalendarAlt,
-  FaGraduationCap,
-} from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+  Notifications as BellIcon,
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  Assignment as ExamIcon,
+  Assessment as ReportIcon,
+  Settings as SettingsIcon,
+  ExitToApp as LogOutIcon,
+  ArrowDropDown as ChevronDownIcon,
+  AccountCircle as UserIcon,
+  Email as EmailIcon,
+  Menu as MenuIcon,
+  Close as CloseIcon,
+  Search as SearchIcon,
+} from "@mui/icons-material";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Badge,
+  Menu,
+  MenuItem,
+  Box,
+  Avatar,
+  Divider,
+  Button,
+  useMediaQuery,
+  useTheme,
+  Slide,
+  Fade,
+  InputBase,
+  alpha,
+  styled,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Drawer,
+} from "@mui/material";
+import { keyframes } from "@mui/system";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
+// Create pulse animation
+const pulseAnimation = keyframes`
+  0% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(25, 118, 210, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0); }
+`;
+
+// Styled components
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: "100%",
+  [theme.breakpoints.up("sm")]: {
+    marginLeft: theme.spacing(3),
+    width: "auto",
+  },
+}));
+
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: "100%",
+  position: "absolute",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: "inherit",
+  "& .MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create("width"),
+    width: "100%",
+    [theme.breakpoints.up("md")]: {
+      width: "20ch",
+      "&:focus": {
+        width: "30ch",
+      },
+    },
+  },
+}));
+
+// Create theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#1a237e",
+    },
+    secondary: {
+      main: "#ff4081",
+    },
+    background: {
+      default: "#f5f7fa",
+    },
+  },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          background: "linear-gradient(to right, #1a2980, #26d0ce)",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+          fontWeight: 500,
+        },
+      },
+    },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+});
+
+// Page components
+const DashboardPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Dashboard</Typography>
+  </Box>
+);
+const ExamsPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Exams</Typography>
+  </Box>
+);
+const StudentsPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Students</Typography>
+  </Box>
+);
+const ReportsPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Reports</Typography>
+  </Box>
+);
+const ProfilePage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Profile</Typography>
+  </Box>
+);
+const SettingsPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Settings</Typography>
+  </Box>
+);
+
+// AdminPanelHeader component
 function AdminPanelHeader() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState("Dashboard");
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const navLinks = [
-    {
-      name: "Dashboard",
-      icon: <FaChartLine className="mr-2" />,
-      path: "/dashboard",
-    },
-    { name: "Exams", icon: <FaCalendarAlt className="mr-2" />, path: "/exams" },
-    {
-      name: "Students",
-      icon: <FaGraduationCap className="mr-2" />,
-      path: "/students",
-    },
-    {
-      name: "Reports",
-      icon: <FaChartLine className="mr-2" />,
-      path: "/reports",
-    },
+  const navItems = [
+    { name: "Dashboard", icon: <DashboardIcon />, path: "/dashboard" },
+    { name: "Exams", icon: <ExamIcon />, path: "/exams" },
+    { name: "Students", icon: <PeopleIcon />, path: "/students" },
+    { name: "Reports", icon: <ReportIcon />, path: "/reports" },
+  ];
+
+  const dropdownItems = [
+    { name: "Profile", icon: <UserIcon />, path: "/profile" },
+    { name: "Settings", icon: <SettingsIcon />, path: "/settings" },
   ];
 
   const notifications = [
@@ -42,191 +188,514 @@ function AdminPanelHeader() {
     { id: 3, text: "System maintenance scheduled", time: "2 days ago" },
   ];
 
-  return (
-    <header className="w-full bg-gradient-to-r from-blue-800 to-indigo-900 text-white shadow-lg fixed top-0 left-0 right-0 z-40">
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main Header */}
-        <div className="flex items-center justify-between h-16 w-full">
-          {/* Logo and Mobile Menu Button */}
-          <div className="flex items-center flex-shrink-0">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden text-white focus:outline-none mr-4"
-            >
-              {isMobileMenuOpen ? (
-                <FaTimes className="h-6 w-6" />
-              ) : (
-                <FaBars className="h-6 w-6" />
-              )}
-            </button>
+  const isMenuOpen = Boolean(anchorEl);
+  const isNotificationOpen = Boolean(notificationAnchorEl);
 
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              className="flex items-center"
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleNotificationMenuOpen = (event) => {
+    setNotificationAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setNotificationAnchorEl(null);
+  };
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const menuId = "primary-search-account-menu";
+  const renderMenu = (
+    <Menu
+      anchorEl={anchorEl}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+      id={menuId}
+      keepMounted
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
+      open={isMenuOpen}
+      onClose={handleMenuClose}
+      TransitionComponent={Fade}
+      PaperProps={{
+        elevation: 8,
+        sx: {
+          mt: 1.5,
+          minWidth: 200,
+          borderRadius: 2,
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
+          overflow: "visible",
+          "&:before": {
+            content: '""',
+            display: "block",
+            position: "absolute",
+            top: 0,
+            right: 14,
+            width: 10,
+            height: 10,
+            bgcolor: "background.paper",
+            transform: "translateY(-50%) rotate(45deg)",
+            zIndex: 0,
+          },
+        },
+      }}
+    >
+      <Box
+        sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}
+      >
+        <Avatar
+          sx={{
+            width: 40,
+            height: 40,
+            bgcolor: "primary.main",
+            animation: `${pulseAnimation} 2s infinite`,
+          }}
+        >
+          <UserIcon />
+        </Avatar>
+        <Box>
+          <Typography variant="subtitle1" fontWeight="medium">
+            Thilina Hettiararchchci
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Administrator
+          </Typography>
+        </Box>
+      </Box>
+      <Divider sx={{ my: 1 }} />
+
+      {dropdownItems.map((item) => (
+        <MenuItem
+          key={item.name}
+          onClick={handleMenuClose}
+          component={Link}
+          to={item.path}
+          sx={{
+            py: 1.5,
+            px: 2,
+            "&:hover": {
+              backgroundColor: "rgba(25, 118, 210, 0.08)",
+            },
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 1,
+                bgcolor: "rgba(25, 118, 210, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <FaGraduationCap className="h-8 w-8 text-blue-300 mr-2" />
-              <span className="text-xl font-bold whitespace-nowrap">
-                ExamScheduler Pro
-              </span>
-            </motion.div>
-          </div>
+              {item.icon}
+            </Box>
+            {item.name}
+          </Box>
+        </MenuItem>
+      ))}
+      <Divider sx={{ my: 1 }} />
+      <MenuItem
+        onClick={handleMenuClose}
+        sx={{
+          py: 1.5,
+          px: 2,
+          color: "error.main",
+          "&:hover": {
+            backgroundColor: "rgba(244, 67, 54, 0.08)",
+          },
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              borderRadius: 1,
+              bgcolor: "rgba(244, 67, 54, 0.1)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <LogOutIcon fontSize="small" />
+          </Box>
+          Log Out
+        </Box>
+      </MenuItem>
+    </Menu>
+  );
+
+  const notificationMenuId = "notification-menu";
+  const renderNotificationMenu = (
+    <Menu
+      anchorEl={notificationAnchorEl}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+      id={notificationMenuId}
+      keepMounted
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
+      open={isNotificationOpen}
+      onClose={handleMenuClose}
+      TransitionComponent={Fade}
+      PaperProps={{
+        elevation: 8,
+        sx: {
+          mt: 1.5,
+          width: 350,
+          borderRadius: 2,
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
+          overflow: "visible",
+          "&:before": {
+            content: '""',
+            display: "block",
+            position: "absolute",
+            top: 0,
+            right: 14,
+            width: 10,
+            height: 10,
+            bgcolor: "background.paper",
+            transform: "translateY(-50%) rotate(45deg)",
+            zIndex: 0,
+          },
+        },
+      }}
+    >
+      <Box sx={{ px: 2, py: 1.5 }}>
+        <Typography variant="h6" fontWeight="medium">
+          Notifications
+        </Typography>
+      </Box>
+      <Divider />
+
+      <Box sx={{ maxHeight: 400, overflow: "auto" }}>
+        {notifications.map((notification) => (
+          <MenuItem
+            key={notification.id}
+            onClick={handleMenuClose}
+            sx={{
+              py: 2,
+              px: 2,
+              "&:hover": {
+                backgroundColor: "rgba(25, 118, 210, 0.08)",
+              },
+            }}
+          >
+            <Box sx={{ width: "100%" }}>
+              <Typography variant="body1">{notification.text}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {notification.time}
+              </Typography>
+            </Box>
+          </MenuItem>
+        ))}
+      </Box>
+
+      <Divider />
+      <Box sx={{ py: 1, textAlign: "center" }}>
+        <Button color="primary">View all notifications</Button>
+      </Box>
+    </Menu>
+  );
+
+  const drawer = (
+    <Box
+      sx={{
+        width: 250,
+        height: "100%",
+        bgcolor: "background.paper",
+        pt: 1,
+      }}
+    >
+      <List>
+        {navItems.map((item) => (
+          <ListItem
+            button
+            key={item.name}
+            component={Link}
+            to={item.path}
+            selected={activeNav === item.name}
+            onClick={() => {
+              setActiveNav(item.name);
+              setMobileOpen(false);
+            }}
+            sx={{
+              "&.Mui-selected": {
+                backgroundColor: "rgba(25, 118, 210, 0.12)",
+                "&:hover": {
+                  backgroundColor: "rgba(25, 118, 210, 0.16)",
+                },
+              },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                color: activeNav === item.name ? "primary.main" : "inherit",
+              }}
+            >
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText primary={item.name} />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+
+  return (
+    <>
+      <AppBar position="fixed">
+        <Toolbar sx={{ py: 1 }}>
+          {/* Mobile menu button */}
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2, display: { md: "none" } }}
+          >
+            {mobileOpen ? <CloseIcon /> : <MenuIcon />}
+          </IconButton>
+
+          {/* Logo */}
+          <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                bgcolor: "white",
+                borderRadius: 1.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mr: 1.5,
+                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{
+                  background: "linear-gradient(to right, #1a2980, #26d0ce)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  fontWeight: "bold",
+                }}
+              >
+                ES
+              </Typography>
+            </Box>
+            <Typography
+              variant="h6"
+              noWrap
+              component={Link}
+              to="/"
+              sx={{
+                fontWeight: 700,
+                color: "white",
+                textDecoration: "none",
+                display: { xs: "none", sm: "block" },
+              }}
+            >
+              ExamSync
+            </Typography>
+          </Box>
+
+          {/* Search bar - desktop */}
+          <Search sx={{ display: { xs: "none", md: "block" } }}>
+            <SearchIconWrapper>
+              <SearchIcon />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder="Search…"
+              inputProps={{ "aria-label": "search" }}
+            />
+          </Search>
+
+          <Box sx={{ flexGrow: 1 }} />
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex flex-grow justify-center ml-10">
-            <div className="flex space-x-2 lg:space-x-8">
-              {navLinks.map((link, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    to={link.path}
-                    className="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors duration-300 whitespace-nowrap"
-                  >
-                    {link.icon}
-                    {link.name}
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          </nav>
-
-          {/* Right Side Icons */}
-          <div className="flex items-center justify-end space-x-4 ml-auto">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-full hover:bg-blue-700 transition-colors duration-300 relative"
-              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-            >
-              <FaBell className="h-5 w-5" />
-              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-full hover:bg-blue-700 transition-colors duration-300"
-            >
-              <FaEnvelope className="h-5 w-5" />
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="p-2 rounded-full hover:bg-blue-700 transition-colors duration-300 relative"
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-            >
-              <FaUserCog className="h-5 w-5" />
-            </motion.button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="md:hidden overflow-hidden w-full"
-            >
-              <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                {navLinks.map((link, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ x: -20 }}
-                    animate={{ x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Link
-                      to={link.path}
-                      className="flex items-center px-3 py-2 rounded-md text-base font-medium hover:bg-blue-700 transition-colors duration-300 w-full"
-                    >
-                      {link.icon}
-                      {link.name}
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Notifications Dropdown */}
-      <AnimatePresence>
-        {isNotificationOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed right-4 mt-2 w-72 bg-white rounded-md shadow-lg z-50"
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+              gap: 0.5,
+            }}
           >
-            <div className="p-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">
-                Notifications
-              </h3>
-            </div>
-            <div className="divide-y divide-gray-100">
-              {notifications.map((notification) => (
-                <motion.div
-                  key={notification.id}
-                  whileHover={{ backgroundColor: "#f5f5f5" }}
-                  className="p-4 cursor-pointer"
-                >
-                  <p className="text-sm text-gray-800">{notification.text}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {notification.time}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-            <div className="p-3 bg-gray-50 text-center">
-              <button className="text-sm text-blue-600 hover:text-blue-800">
-                View all notifications
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {navItems.map((item) => (
+              <Button
+                key={item.name}
+                startIcon={item.icon}
+                component={Link}
+                to={item.path}
+                onClick={() => setActiveNav(item.name)}
+                sx={{
+                  px: 2,
+                  color:
+                    activeNav === item.name
+                      ? "white"
+                      : "rgba(255, 255, 255, 0.8)",
+                  backgroundColor:
+                    activeNav === item.name
+                      ? "rgba(255, 255, 255, 0.15)"
+                      : "transparent",
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  },
+                }}
+              >
+                {item.name}
+              </Button>
+            ))}
+          </Box>
 
-      {/* Profile Dropdown */}
-      <AnimatePresence>
-        {isProfileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed right-4 mt-2 w-48 bg-white rounded-md shadow-lg z-50"
-          >
-            <div className="py-1">
-              <Link
-                to="/profile"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          {/* Right side icons */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
+            <IconButton
+              size="large"
+              aria-label="show notifications"
+              color="inherit"
+              onClick={handleNotificationMenuOpen}
+              sx={{
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                },
+              }}
+            >
+              <Badge
+                badgeContent={3}
+                color="error"
+                variant="dot"
+                overlap="circular"
               >
-                Your Profile
-              </Link>
-              <Link
-                to="/settings"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                <BellIcon />
+              </Badge>
+            </IconButton>
+
+            <IconButton
+              size="large"
+              aria-label="show messages"
+              color="inherit"
+              sx={{
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                },
+              }}
+            >
+              <Badge badgeContent={1} color="error">
+                <EmailIcon />
+              </Badge>
+            </IconButton>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <IconButton
+                size="large"
+                edge="end"
+                aria-label="account of current user"
+                aria-controls={menuId}
+                aria-haspopup="true"
+                onClick={handleProfileMenuOpen}
+                color="inherit"
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  },
+                }}
               >
-                Settings
-              </Link>
-              <div className="border-t border-gray-100"></div>
-              <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Sign out
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
+                <Avatar
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    bgcolor: "white",
+                    color: "primary.main",
+                    fontWeight: "bold",
+                    mr: 1,
+                  }}
+                >
+                  TH
+                </Avatar>
+                <ChevronDownIcon
+                  sx={{
+                    transform: isMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.3s",
+                  }}
+                />
+              </IconButton>
+            </Box>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      {/* Mobile drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: 250,
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
+
+      {renderMenu}
+      {renderNotificationMenu}
+    </>
   );
 }
 
-export default AdminPanelHeader;
+// Main App component
+function App() {
+  return (
+    <Router>
+      <ThemeProvider theme={theme}>
+        <Box
+          sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+        >
+          <AdminPanelHeader />
+          <Box component="main" sx={{ flexGrow: 1, pt: 8, px: 3 }}>
+            <Routes>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/exams" element={<ExamsPage />} />
+              <Route path="/students" element={<StudentsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/" element={<DashboardPage />} />
+            </Routes>
+          </Box>
+        </Box>
+      </ThemeProvider>
+    </Router>
+  );
+}
+
+export default App;
