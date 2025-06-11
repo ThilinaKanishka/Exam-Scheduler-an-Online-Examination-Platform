@@ -38,12 +38,19 @@ import {
   ListItemIcon,
   ListItemText,
   Drawer,
+  CssBaseline,
 } from "@mui/material";
 import { keyframes } from "@mui/system";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link,
+  Navigate,
+} from "react-router-dom";
 
-// Create pulse animation
+// Animation
 const pulseAnimation = keyframes`
   0% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.4); }
   70% { box-shadow: 0 0 0 10px rgba(25, 118, 210, 0); }
@@ -93,7 +100,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-// Create theme
+// Theme
 const theme = createTheme({
   palette: {
     primary: {
@@ -133,36 +140,47 @@ const theme = createTheme({
 const DashboardPage = () => (
   <Box p={3}>
     <Typography variant="h4">Dashboard</Typography>
-  </Box>
-);
-const ExamsPage = () => (
-  <Box p={3}>
-    <Typography variant="h4">Exams</Typography>
-  </Box>
-);
-const StudentsPage = () => (
-  <Box p={3}>
-    <Typography variant="h4">Students</Typography>
-  </Box>
-);
-const ReportsPage = () => (
-  <Box p={3}>
-    <Typography variant="h4">Reports</Typography>
-  </Box>
-);
-const ProfilePage = () => (
-  <Box p={3}>
-    <Typography variant="h4">Profile</Typography>
-  </Box>
-);
-const SettingsPage = () => (
-  <Box p={3}>
-    <Typography variant="h4">Settings</Typography>
+    <Typography>Welcome to your admin dashboard</Typography>
   </Box>
 );
 
-// AdminPanelHeader component
-function AdminPanelHeader() {
+const ExamsPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Exams</Typography>
+    <Typography>Manage your exams here</Typography>
+  </Box>
+);
+
+const StudentsPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Students</Typography>
+    <Typography>View and manage students</Typography>
+  </Box>
+);
+
+const ReportsPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Reports</Typography>
+    <Typography>View system reports</Typography>
+  </Box>
+);
+
+const ProfilePage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Profile</Typography>
+    <Typography>Manage your profile</Typography>
+  </Box>
+);
+
+const SettingsPage = () => (
+  <Box p={3}>
+    <Typography variant="h4">Settings</Typography>
+    <Typography>Configure system settings</Typography>
+  </Box>
+);
+
+// Main Layout Component
+function AdminLayout() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -188,9 +206,6 @@ function AdminPanelHeader() {
     { id: 3, text: "System maintenance scheduled", time: "2 days ago" },
   ];
 
-  const isMenuOpen = Boolean(anchorEl);
-  const isNotificationOpen = Boolean(notificationAnchorEl);
-
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -208,219 +223,9 @@ function AdminPanelHeader() {
     setMobileOpen(!mobileOpen);
   };
 
-  const menuId = "primary-search-account-menu";
-  const renderMenu = (
-    <Menu
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "right",
-      }}
-      id={menuId}
-      keepMounted
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
-      TransitionComponent={Fade}
-      PaperProps={{
-        elevation: 8,
-        sx: {
-          mt: 1.5,
-          minWidth: 200,
-          borderRadius: 2,
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
-          overflow: "visible",
-          "&:before": {
-            content: '""',
-            display: "block",
-            position: "absolute",
-            top: 0,
-            right: 14,
-            width: 10,
-            height: 10,
-            bgcolor: "background.paper",
-            transform: "translateY(-50%) rotate(45deg)",
-            zIndex: 0,
-          },
-        },
-      }}
-    >
-      <Box
-        sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}
-      >
-        <Avatar
-          sx={{
-            width: 40,
-            height: 40,
-            bgcolor: "primary.main",
-            animation: `${pulseAnimation} 2s infinite`,
-          }}
-        >
-          <UserIcon />
-        </Avatar>
-        <Box>
-          <Typography variant="subtitle1" fontWeight="medium">
-            Thilina Hettiararchchci
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Administrator
-          </Typography>
-        </Box>
-      </Box>
-      <Divider sx={{ my: 1 }} />
-
-      {dropdownItems.map((item) => (
-        <MenuItem
-          key={item.name}
-          onClick={handleMenuClose}
-          component={Link}
-          to={item.path}
-          sx={{
-            py: 1.5,
-            px: 2,
-            "&:hover": {
-              backgroundColor: "rgba(25, 118, 210, 0.08)",
-            },
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
-              sx={{
-                width: 32,
-                height: 32,
-                borderRadius: 1,
-                bgcolor: "rgba(25, 118, 210, 0.1)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {item.icon}
-            </Box>
-            {item.name}
-          </Box>
-        </MenuItem>
-      ))}
-      <Divider sx={{ my: 1 }} />
-      <MenuItem
-        onClick={handleMenuClose}
-        sx={{
-          py: 1.5,
-          px: 2,
-          color: "error.main",
-          "&:hover": {
-            backgroundColor: "rgba(244, 67, 54, 0.08)",
-          },
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 1,
-              bgcolor: "rgba(244, 67, 54, 0.1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <LogOutIcon fontSize="small" />
-          </Box>
-          Log Out
-        </Box>
-      </MenuItem>
-    </Menu>
-  );
-
-  const notificationMenuId = "notification-menu";
-  const renderNotificationMenu = (
-    <Menu
-      anchorEl={notificationAnchorEl}
-      anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "right",
-      }}
-      id={notificationMenuId}
-      keepMounted
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      open={isNotificationOpen}
-      onClose={handleMenuClose}
-      TransitionComponent={Fade}
-      PaperProps={{
-        elevation: 8,
-        sx: {
-          mt: 1.5,
-          width: 350,
-          borderRadius: 2,
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
-          overflow: "visible",
-          "&:before": {
-            content: '""',
-            display: "block",
-            position: "absolute",
-            top: 0,
-            right: 14,
-            width: 10,
-            height: 10,
-            bgcolor: "background.paper",
-            transform: "translateY(-50%) rotate(45deg)",
-            zIndex: 0,
-          },
-        },
-      }}
-    >
-      <Box sx={{ px: 2, py: 1.5 }}>
-        <Typography variant="h6" fontWeight="medium">
-          Notifications
-        </Typography>
-      </Box>
-      <Divider />
-
-      <Box sx={{ maxHeight: 400, overflow: "auto" }}>
-        {notifications.map((notification) => (
-          <MenuItem
-            key={notification.id}
-            onClick={handleMenuClose}
-            sx={{
-              py: 2,
-              px: 2,
-              "&:hover": {
-                backgroundColor: "rgba(25, 118, 210, 0.08)",
-              },
-            }}
-          >
-            <Box sx={{ width: "100%" }}>
-              <Typography variant="body1">{notification.text}</Typography>
-              <Typography variant="caption" color="text.secondary">
-                {notification.time}
-              </Typography>
-            </Box>
-          </MenuItem>
-        ))}
-      </Box>
-
-      <Divider />
-      <Box sx={{ py: 1, textAlign: "center" }}>
-        <Button color="primary">View all notifications</Button>
-      </Box>
-    </Menu>
-  );
-
   const drawer = (
     <Box
-      sx={{
-        width: 250,
-        height: "100%",
-        bgcolor: "background.paper",
-        pt: 1,
-      }}
+      sx={{ width: 250, height: "100%", bgcolor: "background.paper", pt: 1 }}
     >
       <List>
         {navItems.map((item) => (
@@ -458,13 +263,12 @@ function AdminPanelHeader() {
   );
 
   return (
-    <>
+    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <CssBaseline />
       <AppBar position="fixed">
         <Toolbar sx={{ py: 1 }}>
-          {/* Mobile menu button */}
           <IconButton
             color="inherit"
-            aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { md: "none" } }}
@@ -472,7 +276,6 @@ function AdminPanelHeader() {
             {mobileOpen ? <CloseIcon /> : <MenuIcon />}
           </IconButton>
 
-          {/* Logo */}
           <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
             <Box
               sx={{
@@ -516,7 +319,6 @@ function AdminPanelHeader() {
             </Typography>
           </Box>
 
-          {/* Search bar - desktop */}
           <Search sx={{ display: { xs: "none", md: "block" } }}>
             <SearchIconWrapper>
               <SearchIcon />
@@ -529,7 +331,6 @@ function AdminPanelHeader() {
 
           <Box sx={{ flexGrow: 1 }} />
 
-          {/* Desktop Navigation */}
           <Box
             sx={{
               display: { xs: "none", md: "flex" },
@@ -565,17 +366,13 @@ function AdminPanelHeader() {
             ))}
           </Box>
 
-          {/* Right side icons */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 2 }}>
             <IconButton
               size="large"
-              aria-label="show notifications"
               color="inherit"
               onClick={handleNotificationMenuOpen}
               sx={{
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.15)",
-                },
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.15)" },
               }}
             >
               <Badge
@@ -590,12 +387,9 @@ function AdminPanelHeader() {
 
             <IconButton
               size="large"
-              aria-label="show messages"
               color="inherit"
               sx={{
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.15)",
-                },
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.15)" },
               }}
             >
               <Badge badgeContent={1} color="error">
@@ -603,98 +397,256 @@ function AdminPanelHeader() {
               </Badge>
             </IconButton>
 
-            <Box
+            <IconButton
+              size="large"
+              edge="end"
+              onClick={handleProfileMenuOpen}
+              color="inherit"
               sx={{
-                display: "flex",
-                alignItems: "center",
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.15)" },
               }}
             >
-              <IconButton
-                size="large"
-                edge="end"
-                aria-label="account of current user"
-                aria-controls={menuId}
-                aria-haspopup="true"
-                onClick={handleProfileMenuOpen}
-                color="inherit"
+              <Avatar
                 sx={{
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.15)",
-                  },
+                  width: 36,
+                  height: 36,
+                  bgcolor: "white",
+                  color: "primary.main",
+                  fontWeight: "bold",
+                  mr: 1,
                 }}
               >
-                <Avatar
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    bgcolor: "white",
-                    color: "primary.main",
-                    fontWeight: "bold",
-                    mr: 1,
-                  }}
-                >
-                  TH
-                </Avatar>
-                <ChevronDownIcon
-                  sx={{
-                    transform: isMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
-                    transition: "transform 0.3s",
-                  }}
-                />
-              </IconButton>
-            </Box>
+                TH
+              </Avatar>
+              <ChevronDownIcon
+                sx={{
+                  transform: Boolean(anchorEl)
+                    ? "rotate(180deg)"
+                    : "rotate(0deg)",
+                  transition: "transform 0.3s",
+                }}
+              />
+            </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Mobile drawer */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
         onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true,
-        }}
+        ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": {
-            boxSizing: "border-box",
-            width: 250,
-          },
+          "& .MuiDrawer-paper": { width: 250 },
         }}
       >
         {drawer}
       </Drawer>
 
-      {renderMenu}
-      {renderNotificationMenu}
-    </>
+      {/* Profile Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        TransitionComponent={Fade}
+        PaperProps={{
+          elevation: 8,
+          sx: {
+            mt: 1.5,
+            minWidth: 200,
+            borderRadius: 2,
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
+            overflow: "visible",
+            "&:before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 14,
+              width: 10,
+              height: 10,
+              bgcolor: "background.paper",
+              transform: "translateY(-50%) rotate(45deg)",
+              zIndex: 0,
+            },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            px: 2,
+            py: 1.5,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+          }}
+        >
+          <Avatar
+            sx={{
+              width: 40,
+              height: 40,
+              bgcolor: "primary.main",
+              animation: `${pulseAnimation} 2s infinite`,
+            }}
+          >
+            <UserIcon />
+          </Avatar>
+          <Box>
+            <Typography variant="subtitle1" fontWeight="medium">
+              Admin User
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Administrator
+            </Typography>
+          </Box>
+        </Box>
+        <Divider sx={{ my: 1 }} />
+
+        {dropdownItems.map((item) => (
+          <MenuItem
+            key={item.name}
+            onClick={handleMenuClose}
+            component={Link}
+            to={item.path}
+            sx={{
+              py: 1.5,
+              px: 2,
+              "&:hover": { backgroundColor: "rgba(25, 118, 210, 0.08)" },
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 1,
+                  bgcolor: "rgba(25, 118, 210, 0.1)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {item.icon}
+              </Box>
+              {item.name}
+            </Box>
+          </MenuItem>
+        ))}
+
+        <Divider sx={{ my: 1 }} />
+        <MenuItem
+          onClick={handleMenuClose}
+          sx={{
+            py: 1.5,
+            px: 2,
+            color: "error.main",
+            "&:hover": { backgroundColor: "rgba(244, 67, 54, 0.08)" },
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box
+              sx={{
+                width: 32,
+                height: 32,
+                borderRadius: 1,
+                bgcolor: "rgba(244, 67, 54, 0.1)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <LogOutIcon fontSize="small" />
+            </Box>
+            Log Out
+          </Box>
+        </MenuItem>
+      </Menu>
+
+      {/* Notification Menu */}
+      <Menu
+        anchorEl={notificationAnchorEl}
+        open={Boolean(notificationAnchorEl)}
+        onClose={handleMenuClose}
+        TransitionComponent={Fade}
+        PaperProps={{
+          elevation: 8,
+          sx: {
+            mt: 1.5,
+            width: 350,
+            borderRadius: 2,
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
+            overflow: "visible",
+            "&:before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 14,
+              width: 10,
+              height: 10,
+              bgcolor: "background.paper",
+              transform: "translateY(-50%) rotate(45deg)",
+              zIndex: 0,
+            },
+          },
+        }}
+      >
+        <Box sx={{ px: 2, py: 1.5 }}>
+          <Typography variant="h6" fontWeight="medium">
+            Notifications
+          </Typography>
+        </Box>
+        <Divider />
+
+        <Box sx={{ maxHeight: 400, overflow: "auto" }}>
+          {notifications.map((notification) => (
+            <MenuItem
+              key={notification.id}
+              onClick={handleMenuClose}
+              sx={{
+                py: 2,
+                px: 2,
+                "&:hover": { backgroundColor: "rgba(25, 118, 210, 0.08)" },
+              }}
+            >
+              <Box sx={{ width: "100%" }}>
+                <Typography variant="body1">{notification.text}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {notification.time}
+                </Typography>
+              </Box>
+            </MenuItem>
+          ))}
+        </Box>
+
+        <Divider />
+        <Box sx={{ py: 1, textAlign: "center" }}>
+          <Button color="primary">View all notifications</Button>
+        </Box>
+      </Menu>
+
+      <Box component="main" sx={{ flexGrow: 1, pt: 8, px: 3 }}>
+        <Routes>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/exams" element={<ExamsPage />} />
+          <Route path="/students" element={<StudentsPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Box>
+    </Box>
   );
 }
 
-// Main App component
+// Main App Component
 function App() {
   return (
-    <Router>
-      <ThemeProvider theme={theme}>
-        <Box
-          sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-        >
-          <AdminPanelHeader />
-          <Box component="main" sx={{ flexGrow: 1, pt: 8, px: 3 }}>
-            <Routes>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/exams" element={<ExamsPage />} />
-              <Route path="/students" element={<StudentsPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/" element={<DashboardPage />} />
-            </Routes>
-          </Box>
-        </Box>
-      </ThemeProvider>
-    </Router>
+    <ThemeProvider theme={theme}>
+      <Router>
+        <AdminLayout />
+      </Router>
+    </ThemeProvider>
   );
 }
 
