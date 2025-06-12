@@ -532,7 +532,7 @@ function ClientHeader() {
                     fontWeight: "bold",
                   }}
                 >
-                  JD
+                  TH
                 </Avatar>
               </IconButton>
             </Box>
