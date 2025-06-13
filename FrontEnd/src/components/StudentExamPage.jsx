@@ -1,102 +1,100 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  FormLabel,
-  Grid,
-} from "@mui/material";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 const StudentExamPage = () => {
+  const { examId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { studentName, itNumber, examId, duration } = location.state || {};
+  const { studentName, itNumber } = location.state || {};
+
+  const [exam, setExam] = useState(null);
   const [questions, setQuestions] = useState([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(duration * 60); // in seconds
-  const [examSubmitted, setExamSubmitted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
-    if (!location.state) {
-      navigate("/exam-details");
+    if (!studentName || !itNumber) {
+      navigate("/exam-login");
       return;
     }
 
-    const fetchQuestions = async () => {
+    const fetchExam = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/examinations/${examId}/student-questions`
+          `http://localhost:5000/api/exams/exams/${examId}/questions`
         );
-        setQuestions(response.data);
+        setExam({
+          name: response.data.examName,
+          duration: response.data.examDuration,
+        });
+        setQuestions(response.data.questions);
+        setTimeLeft(response.data.examDuration * 60); // Convert minutes to seconds
+
+        // Initialize answers object
+        const initialAnswers = {};
+        response.data.questions.forEach((question) => {
+          initialAnswers[question._id] = "";
+        });
+        setAnswers(initialAnswers);
       } catch (error) {
-        console.error("Error fetching questions:", error);
+        console.error("Error fetching exam:", error);
+        navigate("/exam-login");
       }
     };
 
-    fetchQuestions();
-  }, [examId, location.state, navigate]);
+    fetchExam();
+  }, [examId, navigate, studentName, itNumber]);
 
   useEffect(() => {
-    if (timeLeft <= 0 && !examSubmitted) {
-      handleSubmitExam();
-      return;
-    }
+    if (timeLeft <= 0) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((prevTime) => prevTime - 1);
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, examSubmitted]);
+  }, [timeLeft]);
 
-  const handleAnswerChange = (questionId, answer) => {
+  const handleAnswerChange = (questionId, value) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: answer,
+      [questionId]: value,
     }));
   };
 
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
-  };
-
-  const handlePrevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
-  };
-
-  const handleSubmitExam = async () => {
-    if (examSubmitted) return;
+  const handleSubmit = async () => {
+    if (submitted) return;
 
     try {
-      const answersArray = Object.keys(answers).map((questionId) => ({
-        questionId,
-        answer: answers[questionId],
-      }));
+      const answersArray = Object.entries(answers).map(
+        ([questionId, selectedAnswer]) => ({
+          questionId,
+          selectedAnswer,
+        })
+      );
 
-      await axios.post(
-        `http://localhost:5000/api/examinations/${examId}/results`,
+      const response = await axios.post(
+        "http://localhost:5000/api/exams/exams/submit",
         {
+          examId,
           studentName,
           itNumber,
           answers: answersArray,
         }
       );
 
-      setExamSubmitted(true);
-      alert("Exam submitted successfully!");
-      navigate("/exam-details");
+      setSubmitted(true);
+      setScore(response.data.score);
     } catch (error) {
       console.error("Error submitting exam:", error);
     }
@@ -108,103 +106,97 @@ const StudentExamPage = () => {
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  if (questions.length === 0) {
-    return <Typography>Loading questions...</Typography>;
-  }
-
-  const currentQuestion = questions[currentQuestionIndex];
+  if (!exam) return <div>Loading...</div>;
 
   return (
-    <Box sx={{ padding: 3 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Typography variant="h5">
-          {studentName} - {itNumber}
-        </Typography>
-        <Typography variant="h5">Time Left: {formatTime(timeLeft)}</Typography>
-      </Box>
+    <div>
+      <h1>{exam.name}</h1>
+      <div>Time Left: {formatTime(timeLeft)}</div>
 
-      <Grid container spacing={3}>
-        <Grid item xs={9}>
-          <Paper sx={{ padding: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              Question {currentQuestionIndex + 1} of {questions.length}
-            </Typography>
-            <Typography variant="body1" paragraph>
-              {currentQuestion.questionText}
-            </Typography>
+      {submitted ? (
+        <div>
+          <h2>Exam Submitted Successfully!</h2>
+          <p>Your score: {score}</p>
+        </div>
+      ) : (
+        <div>
+          <div style={{ display: "flex" }}>
+            <div style={{ flex: 3 }}>
+              {questions.map((question, index) => (
+                <div key={question._id} style={{ marginBottom: "20px" }}>
+                  <h3>
+                    Question {index + 1} ({question.marks} marks)
+                  </h3>
+                  <p>{question.questionText}</p>
 
-            <FormControl component="fieldset" sx={{ mt: 2 }}>
-              <FormLabel component="legend">Your Answer:</FormLabel>
-              <RadioGroup
-                value={answers[currentQuestion._id] || ""}
-                onChange={(e) =>
-                  handleAnswerChange(currentQuestion._id, e.target.value)
-                }
-              >
-                {currentQuestion.options?.map((option, index) => (
-                  <FormControlLabel
-                    key={index}
-                    value={option}
-                    control={<Radio />}
-                    label={option}
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-
-            <Box
-              sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}
-            >
-              <Button
-                variant="contained"
-                onClick={handlePrevQuestion}
-                disabled={currentQuestionIndex === 0}
-              >
-                Previous
-              </Button>
-              {currentQuestionIndex < questions.length - 1 ? (
-                <Button variant="contained" onClick={handleNextQuestion}>
-                  Next
-                </Button>
-              ) : (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={handleSubmitExam}
-                >
-                  Submit Exam
-                </Button>
-              )}
-            </Box>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={3}>
-          <Paper sx={{ padding: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Questions
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {questions.map((_, index) => (
-                <Button
-                  key={index}
-                  variant={
-                    currentQuestionIndex === index ? "contained" : "outlined"
-                  }
-                  onClick={() => setCurrentQuestionIndex(index)}
-                  sx={{ minWidth: 40, height: 40 }}
-                >
-                  {index + 1}
-                </Button>
+                  {question.questionType === "mcq" ? (
+                    <div>
+                      {question.options.map((option, optIndex) => (
+                        <div key={optIndex}>
+                          <label>
+                            <input
+                              type="radio"
+                              name={`question_${question._id}`}
+                              value={option}
+                              checked={answers[question._id] === option}
+                              onChange={() =>
+                                handleAnswerChange(question._id, option)
+                              }
+                            />
+                            {option}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <textarea
+                      value={answers[question._id] || ""}
+                      onChange={(e) =>
+                        handleAnswerChange(question._id, e.target.value)
+                      }
+                      rows={4}
+                      style={{ width: "100%" }}
+                    />
+                  )}
+                </div>
               ))}
-            </Box>
-            <Typography variant="subtitle2" sx={{ mt: 2 }}>
-              Answered: {Object.keys(answers).length}/{questions.length}
-            </Typography>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
+              <button onClick={handleSubmit}>Submit Exam</button>
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <h3>Questions</h3>
+              <div style={{ display: "flex", flexWrap: "wrap" }}>
+                {questions.map((_, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      width: "30px",
+                      height: "30px",
+                      border: "1px solid #000",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "5px",
+                      cursor: "pointer",
+                      backgroundColor: answers[questions[index]._id]
+                        ? "#4CAF50"
+                        : "#fff",
+                    }}
+                    onClick={() => {
+                      document
+                        .getElementById(`question-${index}`)
+                        ?.scrollIntoView();
+                    }}
+                  >
+                    {index + 1}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

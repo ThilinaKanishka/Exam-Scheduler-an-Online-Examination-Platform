@@ -1,49 +1,38 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  Box,
-  Typography,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-} from "@mui/material";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
 
 const ResultsPage = () => {
   const [exams, setExams] = useState([]);
-  const [selectedExam, setSelectedExam] = useState(null);
+  const [selectedExam, setSelectedExam] = useState("");
   const [results, setResults] = useState([]);
 
   useEffect(() => {
+    const fetchExams = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/exams/exams"
+        );
+        setExams(response.data);
+      } catch (error) {
+        console.error("Error fetching exams:", error);
+      }
+    };
     fetchExams();
   }, []);
 
-  const fetchExams = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:5000/api/examinations"
-      );
-      setExams(response.data);
-    } catch (error) {
-      console.error("Error fetching exams:", error);
-    }
-  };
-
-  const handleSelectExam = async (examId) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/examinations/${examId}/results`
-      );
-      setSelectedExam(examId);
-      setResults(response.data);
-    } catch (error) {
-      console.error("Error fetching results:", error);
+  const handleExamChange = async (e) => {
+    const examId = e.target.value;
+    setSelectedExam(examId);
+    if (examId) {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/exams/exams/${examId}/results`
+        );
+        setResults(response.data);
+      } catch (error) {
+        console.error("Error fetching results:", error);
+      }
     }
   };
 
@@ -51,88 +40,72 @@ const ResultsPage = () => {
     const doc = new jsPDF();
     const exam = exams.find((e) => e._id === selectedExam);
 
-    doc.text(`Exam Results: ${exam?.moduleName} - ${exam?.examName}`, 14, 15);
+    doc.text(`Exam Results: ${exam?.examName || ""}`, 10, 10);
+    doc.text(`Module: ${exam?.moduleName || ""}`, 10, 20);
 
-    doc.autoTable({
-      startY: 25,
-      head: [["Student Name", "IT Number", "Total Marks", "Submission Date"]],
-      body: results.map((result) => [
-        result.studentName,
-        result.itNumber,
-        result.totalMarks,
-        new Date(result.submittedAt).toLocaleString(),
-      ]),
+    let y = 40;
+    doc.text("Rank", 10, y);
+    doc.text("Student Name", 30, y);
+    doc.text("IT Number", 80, y);
+    doc.text("Score", 120, y);
+    doc.text("Submitted At", 150, y);
+    y += 10;
+
+    results.forEach((result, index) => {
+      doc.text(`${index + 1}`, 10, y);
+      doc.text(result.studentName, 30, y);
+      doc.text(result.itNumber, 80, y);
+      doc.text(result.score.toString(), 120, y);
+      doc.text(new Date(result.submittedAt).toLocaleString(), 150, y);
+      y += 10;
     });
 
-    doc.save(`exam_results_${exam?.examName}.pdf`);
+    doc.save(`ExamResults_${exam?.examName || "results"}.pdf`);
   };
 
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Exam Results
-      </Typography>
-
-      <Paper sx={{ padding: 3, marginBottom: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Select Exam
-        </Typography>
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+    <div>
+      <h1>Exam Results</h1>
+      <div>
+        <label>Select Exam:</label>
+        <select value={selectedExam} onChange={handleExamChange}>
+          <option value="">-- Select Exam --</option>
           {exams.map((exam) => (
-            <Button
-              key={exam._id}
-              variant={selectedExam === exam._id ? "contained" : "outlined"}
-              onClick={() => handleSelectExam(exam._id)}
-            >
-              {exam.moduleName} - {exam.examName}
-            </Button>
+            <option key={exam._id} value={exam._id}>
+              {exam.examName} - {exam.moduleName}
+            </option>
           ))}
-        </Box>
-      </Paper>
+        </select>
+      </div>
 
       {selectedExam && (
-        <Paper sx={{ padding: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
-            <Typography variant="h6">Results</Typography>
-            <Button variant="contained" onClick={downloadPDF}>
-              Download PDF
-            </Button>
-          </Box>
-
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Student Name</TableCell>
-                  <TableCell>IT Number</TableCell>
-                  <TableCell>Total Marks</TableCell>
-                  <TableCell>Submission Date</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {results.map((result, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{result.studentName}</TableCell>
-                    <TableCell>{result.itNumber}</TableCell>
-                    <TableCell>{result.totalMarks}</TableCell>
-                    <TableCell>
-                      {new Date(result.submittedAt).toLocaleString()}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
+        <div>
+          <button onClick={downloadPDF}>Download as PDF</button>
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Student Name</th>
+                <th>IT Number</th>
+                <th>Score</th>
+                <th>Submitted At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((result, index) => (
+                <tr key={result._id}>
+                  <td>{index + 1}</td>
+                  <td>{result.studentName}</td>
+                  <td>{result.itNumber}</td>
+                  <td>{result.score}</td>
+                  <td>{new Date(result.submittedAt).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 

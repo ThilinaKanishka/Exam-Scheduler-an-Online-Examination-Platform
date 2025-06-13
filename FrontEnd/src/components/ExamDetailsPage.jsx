@@ -1,191 +1,116 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  Alert,
-  CircularProgress,
-  Card,
-  CardContent,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  FormControl,
-  FormLabel,
-} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const ExamDetailsPage = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
+  const [exams, setExams] = useState([]);
+  const [selectedExam, setSelectedExam] = useState("");
+  const [studentDetails, setStudentDetails] = useState({
     studentName: "",
     itNumber: "",
-    password: "",
+    examPassword: "",
   });
-  const [exam, setExam] = useState(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const examId = location.state?.examId;
 
-  useEffect(() => {
-    if (!examId) {
-      navigate("/schedule-exam");
-    } else {
-      fetchExamDetails();
-    }
-  }, [examId, navigate]);
+  const navigate = useNavigate();
 
-  const fetchExamDetails = async () => {
+  const fetchExams = async () => {
     try {
-      setLoading(true);
-      const response = await axios.get(
-        `http://localhost:5000/api/examinations/${examId}`
-      );
-      setExam(response.data);
-      setLoading(false);
+      const response = await axios.get("http://localhost:5000/api/exams/exams");
+      setExams(response.data);
     } catch (error) {
-      setError("Failed to load exam details");
-      setLoading(false);
-      console.error("Error fetching exam:", error);
+      console.error("Error fetching exams:", error);
     }
   };
 
-  const handleChange = (e) => {
+  React.useEffect(() => {
+    fetchExams();
+  }, []);
+
+  const handleExamChange = (e) => {
+    setSelectedExam(e.target.value);
+  };
+
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setStudentDetails({ ...studentDetails, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
     try {
-      // Verify password
-      await axios.post(
-        `http://localhost:5000/api/examinations/${examId}/verify-password`,
+      // Verify exam password
+      const response = await axios.post(
+        "http://localhost:5000/api/exams/exams/verify-password",
         {
-          password: formData.password,
+          examId: selectedExam,
+          password: studentDetails.examPassword,
         }
       );
 
-      // Navigate to exam page
-      navigate(`/student-exam/${examId}`, {
-        state: {
-          studentName: formData.studentName,
-          itNumber: formData.itNumber,
-          examId: examId,
-          duration: exam.duration,
-        },
-      });
+      if (response.data.message === "Password verified") {
+        navigate(`/student-exam/${selectedExam}`, {
+          state: {
+            studentName: studentDetails.studentName,
+            itNumber: studentDetails.itNumber,
+          },
+        });
+      }
     } catch (error) {
-      setError("Invalid exam password. Please try again.");
+      setError("Invalid exam password or exam not found");
+      console.error("Error verifying password:", error);
     }
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (!exam) {
-    return (
-      <Box sx={{ padding: 3, textAlign: "center" }}>
-        <Typography variant="h6">No exam selected</Typography>
-        <Button
-          variant="contained"
-          onClick={() => navigate("/schedule-exam")}
-          sx={{ mt: 2 }}
-        >
-          Back to Exams
-        </Button>
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "80vh",
-      }}
-    >
-      <Card sx={{ width: "100%", maxWidth: 600 }}>
-        <CardContent>
-          <Typography variant="h4" gutterBottom align="center">
-            Exam Login
-          </Typography>
-
-          <Typography variant="h6" gutterBottom align="center">
-            {exam.moduleName} - {exam.examName}
-          </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <TextField
-                label="Full Name"
-                name="studentName"
-                value={formData.studentName}
-                onChange={handleChange}
-                required
-                fullWidth
-              />
-              <TextField
-                label="IT Number"
-                name="itNumber"
-                value={formData.itNumber}
-                onChange={handleChange}
-                required
-                fullWidth
-              />
-              <TextField
-                label="Exam Password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                fullWidth
-              />
-
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2">
-                  <strong>Duration:</strong> {exam.duration} minutes
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Questions:</strong> {exam.questionsToDisplay} out of{" "}
-                  {exam.totalQuestions}
-                </Typography>
-              </Box>
-
-              <Button
-                type="submit"
-                variant="contained"
-                size="large"
-                fullWidth
-                sx={{ mt: 2 }}
-              >
-                Start Exam
-              </Button>
-            </Box>
-          </form>
-        </CardContent>
-      </Card>
-    </Box>
+    <div>
+      <h1>Exam Login</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Select Exam:</label>
+          <select value={selectedExam} onChange={handleExamChange} required>
+            <option value="">-- Select Exam --</option>
+            {exams.map((exam) => (
+              <option key={exam._id} value={exam._id}>
+                {exam.examName} - {exam.moduleName}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Student Name:</label>
+          <input
+            type="text"
+            name="studentName"
+            value={studentDetails.studentName}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div>
+          <label>IT Number:</label>
+          <input
+            type="text"
+            name="itNumber"
+            value={studentDetails.itNumber}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        <div>
+          <label>Exam Password:</label>
+          <input
+            type="password"
+            name="examPassword"
+            value={studentDetails.examPassword}
+            onChange={handleInputChange}
+            required
+          />
+        </div>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <button type="submit">Start Exam</button>
+      </form>
+    </div>
   );
 };
 
