@@ -4,7 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const RegistrationRoutes = require("./Routes/RegistrationRoute");
-const examinationRoutes = require("./Routes/ExaminationRoute");
+//const examinationRoutes = require("./Routes/ExaminationRoute");
 
 const app = express();
 const PORT = 5000;
@@ -15,7 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api", RegistrationRoutes);
-app.use("/api/exams", examinationRoutes);
+//app.use("/api/exams", examinationRoutes);
 
 // MongoDB Connection
 mongoose
