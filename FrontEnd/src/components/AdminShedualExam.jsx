@@ -19,6 +19,7 @@ const AdminScheduleExam = () => {
       },
     ],
   });
+  const [showExamList, setShowExamList] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -70,6 +71,7 @@ const AdminScheduleExam = () => {
       );
       alert("Exam scheduled successfully!");
       console.log(response.data);
+      setShowExamList(true); // Show the exam list after successful submission
     } catch (error) {
       console.error("Error scheduling exam:", error);
       alert("Failed to schedule exam");
@@ -218,6 +220,64 @@ const AdminScheduleExam = () => {
         </button>
         <button type="submit">Schedule Exam</button>
       </form>
+
+      {showExamList && (
+        <div style={{ marginTop: "40px" }}>
+          <h2>Scheduled Exam Details</h2>
+          <div>
+            <h3>Exam Information</h3>
+            <p>
+              <strong>Module Name:</strong> {examData.moduleName}
+            </p>
+            <p>
+              <strong>Exam Name:</strong> {examData.examName}
+            </p>
+            <p>
+              <strong>Duration:</strong> {examData.examDuration} minutes
+            </p>
+            <p>
+              <strong>Scheduled Date:</strong>{" "}
+              {new Date(examData.scheduledDate).toLocaleString()}
+            </p>
+            <p>
+              <strong>Questions to Show:</strong> {examData.questionsToShow}
+            </p>
+          </div>
+
+          <h3>Questions</h3>
+          <ol>
+            {examData.questions.map((question, index) => (
+              <li key={index}>
+                <p>
+                  <strong>Question {index + 1}:</strong> {question.questionText}
+                </p>
+                <p>
+                  <strong>Type:</strong> {question.questionType}
+                </p>
+                <p>
+                  <strong>Marks:</strong> {question.marks}
+                </p>
+                {question.questionType === "mcq" && (
+                  <div>
+                    <p>
+                      <strong>Options:</strong>
+                    </p>
+                    <ul>
+                      {question.options.map((option, oIndex) => (
+                        <li key={oIndex}>
+                          {option}{" "}
+                          {option === question.correctAnswer &&
+                            "(Correct Answer)"}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </div>
   );
 };
