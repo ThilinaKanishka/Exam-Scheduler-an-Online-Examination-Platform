@@ -44,7 +44,7 @@ function Logging() {
 
     return (
       <motion.div
-        className="absolute bg-blue-300 rounded-full pointer-events-none"
+        className="absolute bg-blue-400 rounded-full pointer-events-none"
         style={{
           left,
           top: "-10px",
@@ -73,7 +73,7 @@ function Logging() {
 
     return (
       <motion.div
-        className="absolute bg-blue-300 rounded-full pointer-events-none"
+        className="absolute bg-blue-400 rounded-full pointer-events-none"
         style={{
           left,
           bottom: "0",
@@ -95,7 +95,7 @@ function Logging() {
   };
 
   return (
-    <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 relative overflow-hidden">
+    <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900 relative overflow-hidden">
       {/* Rain animation */}
       {[...Array(100)].map((_, i) => (
         <Raindrop key={`raindrop-${i}`} index={i} />
@@ -110,7 +110,7 @@ function Logging() {
       {[...Array(20)].map((_, i) => (
         <motion.div
           key={`bubble-${i}`}
-          className="absolute rounded-full bg-white/20 backdrop-blur-sm"
+          className="absolute rounded-full bg-white/10 backdrop-blur-sm"
           style={{
             width: `${20 + Math.random() * 80}px`,
             height: `${20 + Math.random() * 80}px`,
@@ -121,7 +121,7 @@ function Logging() {
           animate={{
             y: [0, -50 + Math.random() * 100],
             x: [0, -20 + Math.random() * 40],
-            opacity: [0.3, 0.6, 0.3],
+            opacity: [0.1, 0.3, 0.1],
           }}
           transition={{
             duration: 15 + Math.random() * 20,
@@ -136,7 +136,7 @@ function Logging() {
       {[...Array(10)].map((_, i) => (
         <motion.div
           key={`color-bubble-${i}`}
-          className="absolute rounded-full bg-indigo-200/30 backdrop-blur-sm"
+          className="absolute rounded-full bg-blue-400/20 backdrop-blur-sm"
           style={{
             width: `${40 + Math.random() * 120}px`,
             height: `${40 + Math.random() * 120}px`,
@@ -147,7 +147,7 @@ function Logging() {
           animate={{
             y: [0, -30 + Math.random() * 60],
             x: [0, -15 + Math.random() * 30],
-            opacity: [0.4, 0.7, 0.4],
+            opacity: [0.2, 0.4, 0.2],
           }}
           transition={{
             duration: 20 + Math.random() * 25,
@@ -162,7 +162,7 @@ function Logging() {
       {[...Array(8)].map((_, i) => (
         <motion.div
           key={`book-${i}`}
-          className="absolute text-indigo-300/50 text-2xl"
+          className="absolute text-blue-400/30 text-2xl"
           style={{
             top: `${Math.random() * 100}%`,
             left: `${Math.random() * 100}%`,
@@ -191,16 +191,16 @@ function Logging() {
         className="w-full max-w-md mx-4 z-10" // Higher z-index than bubbles
       >
         {/* Rest of your login form code remains exactly the same */}
-        <div className="bg-white bg-opacity-30 backdrop-blur-lg rounded-xl shadow-lg overflow-hidden border border-white border-opacity-40">
+        <div className="bg-gray-800 bg-opacity-70 backdrop-blur-lg rounded-xl shadow-lg overflow-hidden border border-gray-700 border-opacity-50">
           {/* Campus Image Section */}
           <motion.div
-            className="bg-indigo-600 p-6 text-center relative"
+            className="bg-blue-800 p-6 text-center relative"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
             <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-30"></div>
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-30"></div>
             </div>
             <div className="flex items-center justify-center space-x-3 relative z-10">
               <FaUniversity className="text-white text-3xl" />
@@ -214,7 +214,7 @@ function Logging() {
               </motion.h1>
             </div>
             <motion.p
-              className="text-indigo-100 mt-2"
+              className="text-blue-200 mt-2"
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -232,14 +232,14 @@ function Logging() {
               transition={{ delay: 0.5 }}
             >
               <label
-                className="block text-gray-700 text-sm font-medium mb-2"
+                className="block text-gray-300 text-sm font-medium mb-2"
                 htmlFor="email"
               >
                 Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaUserGraduate className="text-gray-500" />
+                  <FaUserGraduate className="text-gray-400" />
                 </div>
                 <input
                   id="email"
@@ -248,7 +248,7 @@ function Logging() {
                   placeholder="Enter your email"
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-3 py-2 bg-white bg-opacity-70 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder-gray-400"
+                  className="w-full pl-10 pr-3 py-2 bg-gray-700 bg-opacity-70 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-white"
                 />
               </div>
             </motion.div>
@@ -260,14 +260,14 @@ function Logging() {
               transition={{ delay: 0.6 }}
             >
               <label
-                className="block text-gray-700 text-sm font-medium mb-2"
+                className="block text-gray-300 text-sm font-medium mb-2"
                 htmlFor="password"
               >
                 Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaLock className="text-gray-500" />
+                  <FaLock className="text-gray-400" />
                 </div>
                 <input
                   id="password"
@@ -276,7 +276,7 @@ function Logging() {
                   placeholder="Enter your password"
                   onChange={handleChange}
                   required
-                  className="w-full pl-10 pr-3 py-2 bg-white bg-opacity-70 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder-gray-400"
+                  className="w-full pl-10 pr-3 py-2 bg-gray-700 bg-opacity-70 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400 text-white"
                 />
               </div>
             </motion.div>
@@ -289,11 +289,11 @@ function Logging() {
               <motion.button
                 whileHover={{
                   scale: 1.02,
-                  boxShadow: "0px 5px 15px rgba(79, 70, 229, 0.3)",
+                  boxShadow: "0px 5px 15px rgba(59, 130, 246, 0.3)",
                 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 shadow-md"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 shadow-md"
               >
                 Login
               </motion.button>
@@ -305,11 +305,11 @@ function Logging() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
             >
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-400 text-sm">
                 Don't have an account?{" "}
                 <Link
                   to="/register"
-                  className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors duration-200"
+                  className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
                 >
                   Register here
                 </Link>
@@ -319,12 +319,12 @@ function Logging() {
 
           {/* Footer */}
           <motion.div
-            className="bg-gray-50 bg-opacity-50 px-6 py-4 text-center border-t border-gray-100"
+            className="bg-gray-900 bg-opacity-50 px-6 py-4 text-center border-t border-gray-700"
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.9 }}
           >
-            <p className="text-gray-600 text-xs">
+            <p className="text-gray-400 text-xs">
               Copyright © Version - 24.03.01 All Rights Reserved.
               <br />
               Business Application Services Division - ExamSync.
