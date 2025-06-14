@@ -35,16 +35,138 @@ function Logging() {
     }
   };
 
+  // Raindrop component
+  const Raindrop = ({ index }) => {
+    const left = `${Math.random() * 100}%`;
+    const delay = Math.random() * 2;
+    const duration = 0.5 + Math.random() * 0.5;
+    const opacity = 0.2 + Math.random() * 0.5;
+
+    return (
+      <motion.div
+        className="absolute bg-blue-300 rounded-full pointer-events-none"
+        style={{
+          left,
+          top: "-10px",
+          width: `${1 + Math.random() * 2}px`,
+          height: `${10 + Math.random() * 20}px`,
+          opacity,
+          zIndex: 0,
+        }}
+        initial={{ y: -50 }}
+        animate={{ y: "100vh" }}
+        transition={{
+          delay,
+          duration,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+      />
+    );
+  };
+
+  // Rain splashes (for when raindrops hit the "ground")
+  const RainSplash = ({ index }) => {
+    const left = `${Math.random() * 100}%`;
+    const delay = 0.5 + Math.random() * 2;
+    const duration = 0.2 + Math.random() * 0.3;
+
+    return (
+      <motion.div
+        className="absolute bg-blue-300 rounded-full pointer-events-none"
+        style={{
+          left,
+          bottom: "0",
+          width: `${3 + Math.random() * 4}px`,
+          height: `${1 + Math.random() * 2}px`,
+          opacity: 0.6,
+          zIndex: 0,
+        }}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1.5, opacity: 0 }}
+        transition={{
+          delay,
+          duration,
+          repeat: Infinity,
+          ease: "easeOut",
+        }}
+      />
+    );
+  };
+
   return (
     <div className="fixed inset-0 w-screen h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 relative overflow-hidden">
+      {/* Rain animation */}
+      {[...Array(100)].map((_, i) => (
+        <Raindrop key={`raindrop-${i}`} index={i} />
+      ))}
+
+      {/* Rain splashes */}
+      {[...Array(30)].map((_, i) => (
+        <RainSplash key={`splash-${i}`} index={i} />
+      ))}
+
+      {/* Floating bubble background elements - More visible version */}
+      {[...Array(20)].map((_, i) => (
+        <motion.div
+          key={`bubble-${i}`}
+          className="absolute rounded-full bg-white/20 backdrop-blur-sm"
+          style={{
+            width: `${20 + Math.random() * 80}px`,
+            height: `${20 + Math.random() * 80}px`,
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            zIndex: 0,
+          }}
+          animate={{
+            y: [0, -50 + Math.random() * 100],
+            x: [0, -20 + Math.random() * 40],
+            opacity: [0.3, 0.6, 0.3],
+          }}
+          transition={{
+            duration: 15 + Math.random() * 20,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+
+      {/* Colored floating bubbles - More visible */}
+      {[...Array(10)].map((_, i) => (
+        <motion.div
+          key={`color-bubble-${i}`}
+          className="absolute rounded-full bg-indigo-200/30 backdrop-blur-sm"
+          style={{
+            width: `${40 + Math.random() * 120}px`,
+            height: `${40 + Math.random() * 120}px`,
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            zIndex: 0,
+          }}
+          animate={{
+            y: [0, -30 + Math.random() * 60],
+            x: [0, -15 + Math.random() * 30],
+            opacity: [0.4, 0.7, 0.4],
+          }}
+          transition={{
+            duration: 20 + Math.random() * 25,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+
       {/* Floating book icons animation */}
       {[...Array(8)].map((_, i) => (
         <motion.div
-          key={i}
-          className="absolute text-indigo-200 text-2xl"
+          key={`book-${i}`}
+          className="absolute text-indigo-300/50 text-2xl"
           style={{
             top: `${Math.random() * 100}%`,
             left: `${Math.random() * 100}%`,
+            zIndex: 0,
           }}
           animate={{
             y: [0, -20, 0],
@@ -61,36 +183,14 @@ function Logging() {
         </motion.div>
       ))}
 
-      {/* Bubble animations */}
-      {[...Array(5)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full bg-indigo-100 opacity-30"
-          style={{
-            width: `${50 + Math.random() * 100}px`,
-            height: `${50 + Math.random() * 100}px`,
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            scale: [1, 1.2 + Math.random(), 1],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{
-            duration: 8 + Math.random() * 7,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-
-      {/* Login Form Container */}
+      {/* Login Form Container - Ensure it's above bubbles */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-md mx-4"
+        className="w-full max-w-md mx-4 z-10" // Higher z-index than bubbles
       >
+        {/* Rest of your login form code remains exactly the same */}
         <div className="bg-white bg-opacity-30 backdrop-blur-lg rounded-xl shadow-lg overflow-hidden border border-white border-opacity-40">
           {/* Campus Image Section */}
           <motion.div
