@@ -1,86 +1,40 @@
-import mongoose from "mongoose";
+// Model/RegistrationModel.js
+const mongoose = require("mongoose");
 
-const examinationSchema = new mongoose.Schema(
-  {
-    moduleName: {
-      type: String,
-      required: true,
-    },
-    examType: {
-      type: String,
-      enum: ["MCQ", "Structured"],
-      required: true,
-    },
-    questions: [
-      {
-        questionText: {
-          type: String,
-          required: true,
-        },
-        options: {
-          type: [String],
-          required: function () {
-            return this.examType === "MCQ";
-          },
-        },
-        correctAnswer: {
-          type: String,
-          required: true,
-        },
-        marks: {
-          type: Number,
-          required: true,
-        },
-      },
-    ],
-    examPassword: {
-      type: String,
-      required: true,
-    },
-    examDuration: {
-      type: Number, // in minutes
-      required: true,
-    },
-    questionsToDisplay: {
-      type: Number,
-      required: true,
-    },
-    scheduledDate: {
-      type: Date,
-      required: true,
-    },
-    results: [
-      {
-        studentName: {
-          type: String,
-          required: true,
-        },
-        itNumber: {
-          type: String,
-          required: true,
-        },
-        answers: [
-          {
-            questionId: mongoose.Schema.Types.ObjectId,
-            selectedAnswer: String,
-            isCorrect: Boolean,
-            marksObtained: Number,
-          },
-        ],
-        totalMarks: {
-          type: Number,
-          required: true,
-        },
-        submittedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
   },
-  { timestamps: true }
-);
+  registrationNumber: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  phoneNumber: {
+    type: String,
+    required: true,
+  },
+  gender: {
+    type: String,
+    required: true,
+    enum: ["male", "female", "other"],
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-const Examination = mongoose.model("Examination", examinationSchema);
+// Create model from the schema
+const User = mongoose.model("User", userSchema);
 
-export default Examination;
+// Export the model
+module.exports = User;
