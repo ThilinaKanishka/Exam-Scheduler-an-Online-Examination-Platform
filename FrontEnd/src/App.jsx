@@ -19,7 +19,7 @@ function App() {
         <Route path="/AdminScheduleExa" element={<AdminScheduleExa />} />
         <Route path="/ResultsPage" element={<ResultsPage />} />
         <Route path="/ExamDetailsPage" element={<ExamDetailsPage />} />
-        <Route path="/student-exam/:examId" element={<StudentExamPage />} />
+        <Route path="/studentExam" element={<StudentExamPage />} />
         {/* Add student and admin dashboards here */}
       </Routes>
     </Router>
