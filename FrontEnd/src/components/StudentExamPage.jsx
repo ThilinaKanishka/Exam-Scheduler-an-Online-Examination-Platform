@@ -49,13 +49,14 @@ const StudentExamPage = () => {
   }, [examId, navigate, studentName, itNumber]);
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    // Don't start timer if exam is already submitted
+    if (submitted || timeLeft <= 0) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleSubmit();
+          handleSubmit(); // Auto-submit when time reaches 0
           return 0;
         }
         return prev - 1;
@@ -63,9 +64,10 @@ const StudentExamPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, submitted]); // Added submitted to dependencies
 
   const handleAnswerChange = (questionId, value) => {
+    if (submitted) return; // Prevent changes after submission
     setAnswers((prev) => ({
       ...prev,
       [questionId]: value,
@@ -142,6 +144,7 @@ const StudentExamPage = () => {
                               onChange={() =>
                                 handleAnswerChange(question._id, option)
                               }
+                              disabled={submitted}
                             />
                             {option}
                           </label>
@@ -156,11 +159,14 @@ const StudentExamPage = () => {
                       }
                       rows={4}
                       style={{ width: "100%" }}
+                      disabled={submitted}
                     />
                   )}
                 </div>
               ))}
-              <button onClick={handleSubmit}>Submit Exam</button>
+              <button onClick={handleSubmit} disabled={submitted}>
+                Submit Exam
+              </button>
             </div>
 
             <div style={{ flex: 1 }}>
