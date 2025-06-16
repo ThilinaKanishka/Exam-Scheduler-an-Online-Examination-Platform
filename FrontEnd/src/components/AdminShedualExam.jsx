@@ -2,6 +2,168 @@ import React, { useState } from "react";
 import axios from "axios";
 import AdminHeader from "./AdminPanelHeader";
 import AdminFooter from "./AdminPanelFooter";
+import {
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Paper,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  IconButton,
+  Divider,
+  Slide,
+  Fade,
+  Zoom,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Box,
+  Chip,
+  Stack,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormLabel,
+} from "@mui/material";
+import {
+  AddCircleOutline,
+  DeleteOutline,
+  Edit,
+  Save,
+  Cancel,
+  Schedule,
+  Quiz,
+  Lock,
+  List,
+  Visibility,
+  Event,
+  AccessTime,
+  CheckCircle,
+  CalendarToday,
+} from "@mui/icons-material";
+import { styled } from "@mui/system";
+import { keyframes } from "@emotion/react";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+
+// Color scheme
+const colors = {
+  primary: "#4a148c",
+  secondary: "#ff6f00",
+  background: "#f5f5f5",
+  paper: "#ffffff",
+  text: "#333333",
+  accent: "#7b1fa2",
+  success: "#2e7d32",
+  error: "#d32f2f",
+  info: "#0288d1",
+};
+
+// Custom styled components
+const AnimatedContainer = styled(Container)(({ theme }) => ({
+  backgroundColor: colors.background,
+  padding: theme.spacing(4),
+  minHeight: "100vh",
+  transition: "all 0.3s ease",
+}));
+
+const HeaderPaper = styled(Paper)(({ theme }) => ({
+  backgroundColor: colors.primary,
+  color: "white",
+  padding: theme.spacing(3),
+  marginBottom: theme.spacing(4),
+  borderRadius: "12px",
+  boxShadow: `0 4px 20px 0 rgba(0,0,0,0.12)`,
+}));
+
+const FormPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  borderRadius: "12px",
+  boxShadow: `0 2px 10px 0 rgba(0,0,0,0.08)`,
+  marginBottom: theme.spacing(4),
+}));
+
+const QuestionCard = styled(Card)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  borderLeft: `4px solid ${colors.accent}`,
+  transition: "all 0.3s ease",
+  "&:hover": {
+    transform: "translateY(-2px)",
+    boxShadow: `0 6px 12px 0 rgba(0,0,0,0.1)`,
+  },
+}));
+
+const PrimaryButton = styled(Button)(({ theme }) => ({
+  backgroundColor: colors.primary,
+  color: "white",
+  "&:hover": {
+    backgroundColor: colors.accent,
+  },
+  margin: theme.spacing(1),
+}));
+
+const SecondaryButton = styled(Button)(({ theme }) => ({
+  backgroundColor: colors.secondary,
+  color: "white",
+  "&:hover": {
+    backgroundColor: "#e65100",
+  },
+  margin: theme.spacing(1),
+}));
+
+const CorrectOptionChip = styled(Chip)(({ theme }) => ({
+  backgroundColor: "rgba(46, 125, 50, 0.1)",
+  border: `1px solid ${colors.success}`,
+  color: colors.success,
+  fontWeight: "bold",
+  "& .MuiChip-icon": {
+    color: colors.success,
+  },
+}));
+
+const OptionChip = styled(Chip)(({ theme }) => ({
+  margin: theme.spacing(0.5),
+}));
+
+const DateTimeWrapper = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(2),
+  padding: theme.spacing(3),
+  backgroundColor: "rgba(2, 136, 209, 0.05)",
+  borderRadius: theme.shape.borderRadius,
+  border: `1px solid ${colors.info}`,
+  marginBottom: theme.spacing(3),
+  "& .MuiInputBase-root": {
+    backgroundColor: "white",
+  },
+}));
+
+const DateTimeHeader = styled(Box)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  "& svg": {
+    color: colors.info,
+  },
+}));
+
+const OptionsContainer = styled(Box)(({ theme }) => ({
+  marginTop: theme.spacing(2),
+  padding: theme.spacing(2),
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: theme.shape.borderRadius,
+}));
 
 const AdminScheduleExam = () => {
   const [examData, setExamData] = useState({
@@ -9,7 +171,7 @@ const AdminScheduleExam = () => {
     examName: "",
     examPassword: "",
     examDuration: 60,
-    scheduledDate: "",
+    scheduledDate: null,
     questionsToShow: 20,
     questions: [
       {
@@ -24,10 +186,16 @@ const AdminScheduleExam = () => {
   const [showExamList, setShowExamList] = useState(false);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setExamData({ ...examData, [name]: value });
+  };
+
+  const handleDateChange = (date) => {
+    setExamData({ ...examData, scheduledDate: date });
   };
 
   const handleQuestionChange = (index, e) => {
@@ -41,6 +209,12 @@ const AdminScheduleExam = () => {
     const { value } = e.target;
     const updatedQuestions = [...examData.questions];
     updatedQuestions[qIndex].options[oIndex] = value;
+    setExamData({ ...examData, questions: updatedQuestions });
+  };
+
+  const handleCorrectAnswerChange = (qIndex, option) => {
+    const updatedQuestions = [...examData.questions];
+    updatedQuestions[qIndex].correctAnswer = option;
     setExamData({ ...examData, questions: updatedQuestions });
   };
 
@@ -60,14 +234,20 @@ const AdminScheduleExam = () => {
     });
   };
 
-  const removeQuestion = (index) => {
+  const confirmDeleteQuestion = (index) => {
+    setQuestionToDelete(index);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteQuestion = () => {
     const updatedQuestions = [...examData.questions];
-    updatedQuestions.splice(index, 1);
+    updatedQuestions.splice(questionToDelete, 1);
     setExamData({ ...examData, questions: updatedQuestions });
-    if (editingQuestionIndex === index) {
+    if (editingQuestionIndex === questionToDelete) {
       setEditingQuestionIndex(null);
       setEditMode(false);
     }
+    setOpenDeleteDialog(false);
   };
 
   const startEditingQuestion = (index) => {
@@ -102,307 +282,600 @@ const AdminScheduleExam = () => {
   };
 
   return (
-    <div>
+    <div style={{ backgroundColor: colors.background }}>
       <AdminHeader />
-      <h1>Schedule New Exam</h1>
-      {!showExamList ? (
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>Module Name:</label>
-            <input
-              type="text"
-              name="moduleName"
-              value={examData.moduleName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Exam Name:</label>
-            <input
-              type="text"
-              name="examName"
-              value={examData.examName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Exam Password:</label>
-            <input
-              type="password"
-              name="examPassword"
-              value={examData.examPassword}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Duration (minutes):</label>
-            <input
-              type="number"
-              name="examDuration"
-              value={examData.examDuration}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Scheduled Date:</label>
-            <input
-              type="datetime-local"
-              name="scheduledDate"
-              value={examData.scheduledDate}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div>
-            <label>Questions to Show:</label>
-            <input
-              type="number"
-              name="questionsToShow"
-              value={examData.questionsToShow}
-              onChange={handleChange}
-              required
-            />
-          </div>
+      <AnimatedContainer maxWidth="lg">
+        <Slide direction="down" in={true} mountOnEnter unmountOnExit>
+          <HeaderPaper elevation={1}>
+            <Grid container alignItems="center" spacing={2}>
+              <Grid item>
+                <Quiz fontSize="large" />
+              </Grid>
+              <Grid item>
+                <Typography variant="h4" component="h1">
+                  Schedule New Exam
+                </Typography>
+              </Grid>
+            </Grid>
+          </HeaderPaper>
+        </Slide>
 
-          <h2>Questions</h2>
-          {examData.questions.map((question, qIndex) => (
-            <div key={qIndex}>
-              <h3>Question {qIndex + 1}</h3>
-              <div>
-                <label>Question Text:</label>
-                <input
-                  type="text"
-                  name="questionText"
-                  value={question.questionText}
-                  onChange={(e) => handleQuestionChange(qIndex, e)}
-                  required
-                />
-              </div>
-              <div>
-                <label>Question Type:</label>
-                <select
-                  name="questionType"
-                  value={question.questionType}
-                  onChange={(e) => handleQuestionChange(qIndex, e)}
-                >
-                  <option value="mcq">MCQ</option>
-                  <option value="structured">Structured</option>
-                </select>
-              </div>
-              <div>
-                <label>Marks:</label>
-                <input
-                  type="number"
-                  name="marks"
-                  value={question.marks}
-                  onChange={(e) => handleQuestionChange(qIndex, e)}
-                  required
-                />
-              </div>
-              {question.questionType === "mcq" && (
-                <div>
-                  <h4>Options</h4>
-                  {question.options.map((option, oIndex) => (
-                    <div key={oIndex}>
-                      <label>Option {oIndex + 1}:</label>
-                      <input
-                        type="text"
-                        value={option}
-                        onChange={(e) => handleOptionChange(qIndex, oIndex, e)}
-                        required
-                      />
-                    </div>
-                  ))}
-                  <div>
-                    <label>Correct Answer:</label>
-                    <select
-                      name="correctAnswer"
-                      value={question.correctAnswer}
-                      onChange={(e) => handleQuestionChange(qIndex, e)}
+        {!showExamList ? (
+          <Fade in={true}>
+            <FormPaper elevation={2}>
+              <form onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Module Name"
+                      name="moduleName"
+                      value={examData.moduleName}
+                      onChange={handleChange}
                       required
-                    >
-                      <option value="">Select correct option</option>
-                      {question.options.map((option, oIndex) => (
-                        <option key={oIndex} value={option}>
-                          Option {oIndex + 1}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              )}
-              <button type="button" onClick={() => removeQuestion(qIndex)}>
-                Remove Question
-              </button>
-            </div>
-          ))}
-          <button type="button" onClick={addQuestion}>
-            Add Question
-          </button>
-          <button type="submit">Schedule Exam</button>
-        </form>
-      ) : (
-        <div style={{ marginTop: "40px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h2>Scheduled Exam Details</h2>
-            <button onClick={() => setShowExamList(false)}>Edit Exam</button>
-          </div>
+                      variant="outlined"
+                      InputProps={{
+                        startAdornment: <List color="action" sx={{ mr: 1 }} />,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Exam Name"
+                      name="examName"
+                      value={examData.examName}
+                      onChange={handleChange}
+                      required
+                      variant="outlined"
+                      InputProps={{
+                        startAdornment: <Quiz color="action" sx={{ mr: 1 }} />,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Exam Password"
+                      name="examPassword"
+                      type="password"
+                      value={examData.examPassword}
+                      onChange={handleChange}
+                      required
+                      variant="outlined"
+                      InputProps={{
+                        startAdornment: <Lock color="action" sx={{ mr: 1 }} />,
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Duration (minutes)"
+                      name="examDuration"
+                      type="number"
+                      value={examData.examDuration}
+                      onChange={handleChange}
+                      required
+                      variant="outlined"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <DateTimeWrapper>
+                      <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DateTimePicker
+                          label="Exam Date & Time"
+                          value={examData.scheduledDate}
+                          onChange={handleDateChange}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              fullWidth
+                              required
+                              InputProps={{
+                                ...params.InputProps,
+                                startAdornment: (
+                                  <CalendarToday
+                                    color="primary"
+                                    sx={{ mr: 1 }}
+                                  />
+                                ),
+                              }}
+                            />
+                          )}
+                          minDateTime={new Date()}
+                          minutesStep={5}
+                        />
+                      </LocalizationProvider>
+                    </DateTimeWrapper>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Questions to Show"
+                      name="questionsToShow"
+                      type="number"
+                      value={examData.questionsToShow}
+                      onChange={handleChange}
+                      required
+                      variant="outlined"
+                    />
+                  </Grid>
+                </Grid>
 
-          <div>
-            <h3>Exam Information</h3>
-            <p>
-              <strong>Module Name:</strong> {examData.moduleName}
-            </p>
-            <p>
-              <strong>Exam Name:</strong> {examData.examName}
-            </p>
-            <p>
-              <strong>Duration:</strong> {examData.examDuration} minutes
-            </p>
-            <p>
-              <strong>Scheduled Date:</strong>{" "}
-              {new Date(examData.scheduledDate).toLocaleString()}
-            </p>
-            <p>
-              <strong>Questions to Show:</strong> {examData.questionsToShow}
-            </p>
-          </div>
+                <Divider sx={{ my: 4 }} />
 
-          <h3>Questions</h3>
-          <ol>
-            {examData.questions.map((question, index) => (
-              <li
-                key={index}
-                style={{
-                  marginBottom: "20px",
-                  borderBottom: "1px solid #ccc",
-                  padding: "10px",
-                }}
-              >
-                {editMode && editingQuestionIndex === index ? (
-                  <div>
-                    <div>
-                      <label>Question Text:</label>
-                      <input
-                        type="text"
-                        name="questionText"
-                        value={question.questionText}
-                        onChange={(e) => handleQuestionChange(index, e)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label>Question Type:</label>
-                      <select
-                        name="questionType"
-                        value={question.questionType}
-                        onChange={(e) => handleQuestionChange(index, e)}
-                      >
-                        <option value="mcq">MCQ</option>
-                        <option value="structured">Structured</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label>Marks:</label>
-                      <input
-                        type="number"
-                        name="marks"
-                        value={question.marks}
-                        onChange={(e) => handleQuestionChange(index, e)}
-                        required
-                      />
-                    </div>
-                    {question.questionType === "mcq" && (
-                      <div>
-                        <h4>Options</h4>
-                        {question.options.map((option, oIndex) => (
-                          <div key={oIndex}>
-                            <label>Option {oIndex + 1}:</label>
-                            <input
-                              type="text"
-                              value={option}
-                              onChange={(e) =>
-                                handleOptionChange(index, oIndex, e)
-                              }
+                <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+                  Questions
+                </Typography>
+
+                {examData.questions.map((question, qIndex) => (
+                  <Zoom in={true} key={qIndex}>
+                    <QuestionCard>
+                      <CardContent>
+                        <Typography
+                          variant="h6"
+                          gutterBottom
+                          sx={{ color: colors.accent }}
+                        >
+                          Question {qIndex + 1}
+                        </Typography>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12}>
+                            <TextField
+                              fullWidth
+                              label="Question Text"
+                              name="questionText"
+                              value={question.questionText}
+                              onChange={(e) => handleQuestionChange(qIndex, e)}
+                              required
+                              multiline
+                              rows={2}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <FormControl fullWidth>
+                              <InputLabel>Question Type</InputLabel>
+                              <Select
+                                name="questionType"
+                                value={question.questionType}
+                                onChange={(e) =>
+                                  handleQuestionChange(qIndex, e)
+                                }
+                                label="Question Type"
+                              >
+                                <MenuItem value="mcq">Multiple Choice</MenuItem>
+                                <MenuItem value="structured">
+                                  Structured
+                                </MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="Marks"
+                              name="marks"
+                              type="number"
+                              value={question.marks}
+                              onChange={(e) => handleQuestionChange(qIndex, e)}
                               required
                             />
-                          </div>
-                        ))}
-                        <div>
-                          <label>Correct Answer:</label>
-                          <select
-                            name="correctAnswer"
-                            value={question.correctAnswer}
-                            onChange={(e) => handleQuestionChange(index, e)}
-                            required
-                          >
-                            <option value="">Select correct option</option>
-                            {question.options.map((option, oIndex) => (
-                              <option key={oIndex} value={option}>
-                                Option {oIndex + 1}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    )}
-                    <button onClick={saveEditedQuestion}>Save</button>
-                    <button onClick={cancelEditing}>Cancel</button>
-                  </div>
-                ) : (
-                  <div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
+                          </Grid>
+
+                          {question.questionType === "mcq" && (
+                            <>
+                              <Grid item xs={12}>
+                                <Typography
+                                  variant="subtitle1"
+                                  sx={{ mt: 1, mb: 1 }}
+                                >
+                                  Options
+                                </Typography>
+                              </Grid>
+                              {question.options.map((option, oIndex) => (
+                                <Grid item xs={12} sm={6} key={oIndex}>
+                                  <TextField
+                                    fullWidth
+                                    label={`Option ${oIndex + 1}`}
+                                    value={option}
+                                    onChange={(e) =>
+                                      handleOptionChange(qIndex, oIndex, e)
+                                    }
+                                    required
+                                  />
+                                </Grid>
+                              ))}
+                              <Grid item xs={12}>
+                                <OptionsContainer>
+                                  <FormControl component="fieldset">
+                                    <FormLabel component="legend">
+                                      Select Correct Answer
+                                    </FormLabel>
+                                    <RadioGroup
+                                      value={question.correctAnswer}
+                                      onChange={(e) =>
+                                        handleCorrectAnswerChange(
+                                          qIndex,
+                                          e.target.value
+                                        )
+                                      }
+                                    >
+                                      {question.options.map(
+                                        (option, oIndex) => (
+                                          <FormControlLabel
+                                            key={oIndex}
+                                            value={option}
+                                            control={<Radio color="primary" />}
+                                            label={`Option ${
+                                              oIndex + 1
+                                            }: ${option}`}
+                                            disabled={!option.trim()}
+                                          />
+                                        )
+                                      )}
+                                    </RadioGroup>
+                                  </FormControl>
+                                </OptionsContainer>
+                              </Grid>
+                            </>
+                          )}
+                        </Grid>
+                      </CardContent>
+                      <CardActions sx={{ justifyContent: "flex-end" }}>
+                        <IconButton
+                          color="error"
+                          onClick={() => confirmDeleteQuestion(qIndex)}
+                        >
+                          <DeleteOutline />
+                        </IconButton>
+                      </CardActions>
+                    </QuestionCard>
+                  </Zoom>
+                ))}
+
+                <Grid container justifyContent="center" sx={{ mt: 3 }}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<AddCircleOutline />}
+                    onClick={addQuestion}
+                    sx={{ mr: 2 }}
+                  >
+                    Add Question
+                  </Button>
+                  <PrimaryButton
+                    variant="contained"
+                    type="submit"
+                    startIcon={<Save />}
+                  >
+                    Schedule Exam
+                  </PrimaryButton>
+                </Grid>
+              </form>
+            </FormPaper>
+          </Fade>
+        ) : (
+          <Fade in={true}>
+            <div style={{ marginTop: "40px" }}>
+              <Paper
+                elevation={2}
+                sx={{
+                  padding: 3,
+                  mb: 4,
+                  backgroundColor: colors.paper,
+                }}
+              >
+                <Grid
+                  container
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mb: 2 }}
+                >
+                  <Grid item>
+                    <Typography variant="h4" sx={{ color: colors.primary }}>
+                      <Visibility sx={{ mr: 1, verticalAlign: "middle" }} />
+                      Scheduled Exam Details
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <SecondaryButton
+                      variant="contained"
+                      startIcon={<Edit />}
+                      onClick={() => setShowExamList(false)}
                     >
-                      <p>
-                        <strong>Question {index + 1}:</strong>{" "}
-                        {question.questionText}
-                      </p>
-                      <div>
-                        <button onClick={() => startEditingQuestion(index)}>
-                          Edit
-                        </button>
-                        <button onClick={() => removeQuestion(index)}>
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                    <p>
-                      <strong>Type:</strong> {question.questionType}
-                    </p>
-                    <p>
-                      <strong>Marks:</strong> {question.marks}
-                    </p>
-                    {question.questionType === "mcq" && (
-                      <div>
-                        <p>
-                          <strong>Options:</strong>
-                        </p>
-                        <ul>
-                          {question.options.map((option, oIndex) => (
-                            <li key={oIndex}>
-                              {option}{" "}
-                              {option === question.correctAnswer &&
-                                "(Correct Answer)"}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
+                      Edit Exam
+                    </SecondaryButton>
+                  </Grid>
+                </Grid>
+
+                <Divider sx={{ mb: 3 }} />
+
+                <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+                  Exam Information
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Typography>
+                      <strong>Module Name:</strong> {examData.moduleName}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography>
+                      <strong>Exam Name:</strong> {examData.examName}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography>
+                      <strong>Duration:</strong> {examData.examDuration} minutes
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography>
+                      <strong>Scheduled Date:</strong>{" "}
+                      {examData.scheduledDate?.toLocaleString() || "Not set"}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography>
+                      <strong>Questions to Show:</strong>{" "}
+                      {examData.questionsToShow}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+
+              <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+                Questions
+              </Typography>
+              <Grid container spacing={3}>
+                {examData.questions.map((question, index) => (
+                  <Grid item xs={12} key={index}>
+                    <QuestionCard>
+                      <CardContent>
+                        {editMode && editingQuestionIndex === index ? (
+                          <div>
+                            <Grid container spacing={2}>
+                              <Grid item xs={12}>
+                                <TextField
+                                  fullWidth
+                                  label="Question Text"
+                                  name="questionText"
+                                  value={question.questionText}
+                                  onChange={(e) =>
+                                    handleQuestionChange(index, e)
+                                  }
+                                  required
+                                  multiline
+                                  rows={2}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth>
+                                  <InputLabel>Question Type</InputLabel>
+                                  <Select
+                                    name="questionType"
+                                    value={question.questionType}
+                                    onChange={(e) =>
+                                      handleQuestionChange(index, e)
+                                    }
+                                    label="Question Type"
+                                  >
+                                    <MenuItem value="mcq">
+                                      Multiple Choice
+                                    </MenuItem>
+                                    <MenuItem value="structured">
+                                      Structured
+                                    </MenuItem>
+                                  </Select>
+                                </FormControl>
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Marks"
+                                  name="marks"
+                                  type="number"
+                                  value={question.marks}
+                                  onChange={(e) =>
+                                    handleQuestionChange(index, e)
+                                  }
+                                  required
+                                />
+                              </Grid>
+                              {question.questionType === "mcq" && (
+                                <>
+                                  <Grid item xs={12}>
+                                    <Typography
+                                      variant="subtitle1"
+                                      sx={{ mt: 1, mb: 1 }}
+                                    >
+                                      Options
+                                    </Typography>
+                                  </Grid>
+                                  {question.options.map((option, oIndex) => (
+                                    <Grid item xs={12} sm={6} key={oIndex}>
+                                      <TextField
+                                        fullWidth
+                                        label={`Option ${oIndex + 1}`}
+                                        value={option}
+                                        onChange={(e) =>
+                                          handleOptionChange(index, oIndex, e)
+                                        }
+                                        required
+                                      />
+                                    </Grid>
+                                  ))}
+                                  <Grid item xs={12}>
+                                    <OptionsContainer>
+                                      <FormControl component="fieldset">
+                                        <FormLabel component="legend">
+                                          Select Correct Answer
+                                        </FormLabel>
+                                        <RadioGroup
+                                          value={question.correctAnswer}
+                                          onChange={(e) =>
+                                            handleCorrectAnswerChange(
+                                              index,
+                                              e.target.value
+                                            )
+                                          }
+                                        >
+                                          {question.options.map(
+                                            (option, oIndex) => (
+                                              <FormControlLabel
+                                                key={oIndex}
+                                                value={option}
+                                                control={
+                                                  <Radio color="primary" />
+                                                }
+                                                label={`Option ${
+                                                  oIndex + 1
+                                                }: ${option}`}
+                                                disabled={!option.trim()}
+                                              />
+                                            )
+                                          )}
+                                        </RadioGroup>
+                                      </FormControl>
+                                    </OptionsContainer>
+                                  </Grid>
+                                </>
+                              )}
+                            </Grid>
+                            <CardActions sx={{ justifyContent: "flex-end" }}>
+                              <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<Save />}
+                                onClick={saveEditedQuestion}
+                                sx={{ mr: 1 }}
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                startIcon={<Cancel />}
+                                onClick={cancelEditing}
+                              >
+                                Cancel
+                              </Button>
+                            </CardActions>
+                          </div>
+                        ) : (
+                          <div>
+                            <Grid
+                              container
+                              alignItems="center"
+                              justifyContent="space-between"
+                            >
+                              <Grid item>
+                                <Typography
+                                  variant="h6"
+                                  sx={{ color: colors.accent }}
+                                >
+                                  Question {index + 1}
+                                </Typography>
+                              </Grid>
+                              <Grid item>
+                                <IconButton
+                                  color="primary"
+                                  onClick={() => startEditingQuestion(index)}
+                                  sx={{ mr: 1 }}
+                                >
+                                  <Edit />
+                                </IconButton>
+                                <IconButton
+                                  color="error"
+                                  onClick={() => confirmDeleteQuestion(index)}
+                                >
+                                  <DeleteOutline />
+                                </IconButton>
+                              </Grid>
+                            </Grid>
+                            <Typography paragraph sx={{ mt: 1 }}>
+                              {question.questionText}
+                            </Typography>
+                            <Grid container spacing={2}>
+                              <Grid item xs={6} sm={3}>
+                                <Typography>
+                                  <strong>Type:</strong> {question.questionType}
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={6} sm={3}>
+                                <Typography>
+                                  <strong>Marks:</strong> {question.marks}
+                                </Typography>
+                              </Grid>
+                            </Grid>
+                            {question.questionType === "mcq" && (
+                              <div>
+                                <Typography
+                                  variant="subtitle1"
+                                  sx={{ mt: 2, mb: 1 }}
+                                >
+                                  <strong>Options:</strong>
+                                </Typography>
+                                <Stack
+                                  direction="row"
+                                  flexWrap="wrap"
+                                  spacing={1}
+                                >
+                                  {question.options.map((option, oIndex) =>
+                                    option === question.correctAnswer ? (
+                                      <CorrectOptionChip
+                                        key={oIndex}
+                                        label={`${option}`}
+                                        icon={<CheckCircle />}
+                                      />
+                                    ) : (
+                                      <OptionChip
+                                        key={oIndex}
+                                        label={`Option ${
+                                          oIndex + 1
+                                        }: ${option}`}
+                                        variant="outlined"
+                                      />
+                                    )
+                                  )}
+                                </Stack>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+                    </QuestionCard>
+                  </Grid>
+                ))}
+              </Grid>
+            </div>
+          </Fade>
+        )}
+
+        {/* Delete confirmation dialog */}
+        <Dialog
+          open={openDeleteDialog}
+          onClose={() => setOpenDeleteDialog(false)}
+        >
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this question?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
+            <Button
+              onClick={handleDeleteQuestion}
+              color="error"
+              variant="contained"
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </AnimatedContainer>
       <AdminFooter />
     </div>
   );

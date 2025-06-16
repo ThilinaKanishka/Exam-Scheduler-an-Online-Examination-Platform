@@ -32,6 +32,7 @@ import {
   Slide,
   Fade,
   Zoom,
+  styled,
 } from "@mui/material";
 import { keyframes } from "@mui/system";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -76,6 +77,11 @@ const theme = createTheme({
     borderRadius: 8,
   },
 });
+
+// Add this styled component to create space below the fixed header
+const ToolbarOffset = styled("div")(({ theme }) => ({
+  ...theme.mixins.toolbar,
+}));
 
 function AdminPanelHeader() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -488,6 +494,8 @@ function AdminPanelHeader() {
             </Box>
           </Toolbar>
         </AppBar>
+        {/* Add this ToolbarOffset component to create space below the header */}
+        <ToolbarOffset />
         {renderMobileMenu}
         {renderMenu}
       </Box>
