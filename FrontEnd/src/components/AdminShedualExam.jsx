@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
+import AdminHeader from "./AdminPanelHeader";
+import AdminFooter from "./AdminPanelFooter";
 
 const AdminScheduleExam = () => {
   const [examData, setExamData] = useState({
@@ -101,6 +103,7 @@ const AdminScheduleExam = () => {
 
   return (
     <div>
+      <AdminHeader />
       <h1>Schedule New Exam</h1>
       {!showExamList ? (
         <form onSubmit={handleSubmit}>
@@ -400,6 +403,7 @@ const AdminScheduleExam = () => {
           </ol>
         </div>
       )}
+      <AdminFooter />
     </div>
   );
 };
