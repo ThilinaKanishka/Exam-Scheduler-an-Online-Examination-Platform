@@ -286,7 +286,7 @@ const AdminScheduleExam = () => {
       <AdminHeader />
       <AnimatedContainer maxWidth="lg">
         <Slide direction="down" in={true} mountOnEnter unmountOnExit>
-          <HeaderPaper elevation={1}>
+          <HeaderPaper elevation={6}>
             <Grid container alignItems="center" spacing={2}>
               <Grid item>
                 <Quiz fontSize="large" />
