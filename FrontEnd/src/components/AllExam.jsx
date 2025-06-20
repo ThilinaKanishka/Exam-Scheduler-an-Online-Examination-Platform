@@ -626,7 +626,7 @@ const AllExam = () => {
                                         className="text-indigo-600 focus:ring-indigo-500"
                                         disabled={!option.trim()}
                                       />
-                                      <span className="ml-2 text-sm text-gray-700">
+                                      <span className="ml-2 text-sm text-black">
                                         Option {oIndex + 1}:{" "}
                                         {option || "[Empty]"}
                                       </span>
@@ -768,7 +768,7 @@ const AllExam = () => {
                                                   className="text-indigo-600 focus:ring-indigo-500"
                                                   disabled={!option.trim()}
                                                 />
-                                                <span className="ml-2 text-sm text-gray-700">
+                                                <span className="ml-2 text-sm text-black">
                                                   Option {oIndex + 1}:{" "}
                                                   {option || "[Empty]"}
                                                 </span>
@@ -867,7 +867,7 @@ const AllExam = () => {
                                                     question.correctAnswer && (
                                                     <FiCheckCircle className="text-green-500 mr-2" />
                                                   )}
-                                                  <span>
+                                                  <span className="text-black">
                                                     Option {oIndex + 1}:{" "}
                                                     {option}
                                                   </span>
