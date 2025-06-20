@@ -352,7 +352,7 @@ const AllExam = () => {
                         <p className="text-sm text-indigo-600">
                           {exam.moduleName}
                         </p>
-                        <div className="mt-2 space-y-1 text-sm text-gray-600">
+                        <div className="mt-2 space-y-1 text-sm text-black">
                           <div className="flex items-center">
                             <FiCalendar className="mr-2 text-indigo-500" />
                             {new Date(exam.scheduledDate).toLocaleString()}
@@ -576,7 +576,7 @@ const AllExam = () => {
                               </label>
                               <input
                                 type="number"
-                                className="w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-gray-700 leading-tight"
+                                className="w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-black leading-tight"
                                 value={newQuestion.marks}
                                 onChange={handleNewMarksChange}
                               />
@@ -592,7 +592,7 @@ const AllExam = () => {
                                 <input
                                   key={oIndex}
                                   type="text"
-                                  className="w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-gray-700 leading-tight mb-2"
+                                  className="w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-black leading-tight mb-2"
                                   placeholder={`Option ${oIndex + 1}`}
                                   value={option}
                                   onChange={(e) =>
@@ -710,7 +710,7 @@ const AllExam = () => {
                                       </label>
                                       <input
                                         type="number"
-                                        className="w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-gray-700 leading-tight"
+                                        className="w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-black leading-tight"
                                         value={updatedQuestionData.marks}
                                         onChange={handleMarksChange}
                                       />
@@ -728,7 +728,7 @@ const AllExam = () => {
                                           <input
                                             key={oIndex}
                                             type="text"
-                                            className="w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-gray-700 leading-tight mb-2"
+                                            className="w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-black leading-tight mb-2"
                                             placeholder={`Option ${oIndex + 1}`}
                                             value={option}
                                             onChange={(e) =>
@@ -840,7 +840,9 @@ const AllExam = () => {
                                       <span className="font-medium text-indigo-700">
                                         Marks:
                                       </span>{" "}
-                                      {question.marks}
+                                      <span className="text-black">
+                                        {question.marks}
+                                      </span>
                                     </div>
                                   </div>
 
