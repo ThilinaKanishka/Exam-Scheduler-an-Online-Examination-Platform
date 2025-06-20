@@ -15,10 +15,10 @@ import {
   FiList,
   FiLock,
   FiPlusCircle,
-  FiChevronDown,
-  FiChevronUp,
   FiAlertCircle,
 } from "react-icons/fi";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const AllExam = () => {
   const [exams, setExams] = useState([]);
@@ -32,7 +32,7 @@ const AllExam = () => {
     examName: "",
     examPassword: "",
     examDuration: 0,
-    scheduledDate: "",
+    scheduledDate: new Date(),
     questionsToShow: 0,
   });
   const [showAddQuestionForm, setShowAddQuestionForm] = useState(false);
@@ -71,7 +71,7 @@ const AllExam = () => {
         examName: response.data.examName,
         examPassword: response.data.examPassword,
         examDuration: response.data.examDuration,
-        scheduledDate: response.data.scheduledDate,
+        scheduledDate: new Date(response.data.scheduledDate),
         questionsToShow: response.data.questionsToShow,
       });
       setShowAddQuestionForm(false);
@@ -91,7 +91,10 @@ const AllExam = () => {
     try {
       const response = await axios.put(
         `http://localhost:5000/api/exams/exams/${selectedExam._id}`,
-        updatedExamData
+        {
+          ...updatedExamData,
+          scheduledDate: updatedExamData.scheduledDate.toISOString(),
+        }
       );
       setSelectedExam(response.data.exam);
       alert("Exam updated successfully");
@@ -99,6 +102,14 @@ const AllExam = () => {
       console.error("Error updating exam:", error);
       alert("Failed to update exam");
     }
+  };
+
+  // Handle date change
+  const handleDateChange = (date) => {
+    setUpdatedExamData({
+      ...updatedExamData,
+      scheduledDate: date,
+    });
   };
 
   // Handle question update
@@ -499,14 +510,20 @@ const AllExam = () => {
                     <label className="block text-sm font-medium text-indigo-700 mb-1">
                       Scheduled Date
                     </label>
-                    <input
-                      type="text"
-                      disabled
-                      className="w-full rounded-lg border border-indigo-200 bg-gray-100 py-2 px-3 text-gray-700 cursor-not-allowed"
-                      value={new Date(
-                        updatedExamData.scheduledDate
-                      ).toLocaleString()}
-                    />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FiCalendar className="text-indigo-500" />
+                      </div>
+                      <DatePicker
+                        selected={updatedExamData.scheduledDate}
+                        onChange={handleDateChange}
+                        showTimeSelect
+                        timeFormat="HH:mm"
+                        timeIntervals={15}
+                        dateFormat="MMMM d, yyyy h:mm aa"
+                        className="pl-10 w-full rounded-lg border border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-gray-700 leading-tight"
+                      />
+                    </div>
                   </div>
                 </div>
 
