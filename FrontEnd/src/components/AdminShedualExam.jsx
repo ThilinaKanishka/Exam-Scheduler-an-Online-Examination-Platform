@@ -296,6 +296,15 @@ const AdminScheduleExam = () => {
                   Schedule New Exam
                 </Typography>
               </Grid>
+              <Grid item sx={{ marginLeft: "auto" }}>
+                <PrimaryButton
+                  variant="contained"
+                  href="/AllExam"
+                  startIcon={<List />}
+                >
+                  All Exams
+                </PrimaryButton>
+              </Grid>
             </Grid>
           </HeaderPaper>
         </Slide>
