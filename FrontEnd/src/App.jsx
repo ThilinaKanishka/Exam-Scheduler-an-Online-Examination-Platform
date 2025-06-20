@@ -7,6 +7,7 @@ import AdminScheduleExa from "./components/AdminShedualExam";
 import ResultsPage from "./components/ResultsPage";
 import ExamDetailsPage from "./components/ExamDetailsPage";
 import StudentExamPage from "./components/StudentExamPage";
+import AllExam from "./components/AllExam";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/ResultsPage" element={<ResultsPage />} />
         <Route path="/ExamDetailsPage" element={<ExamDetailsPage />} />
         <Route path="/student-exam/:examId" element={<StudentExamPage />} />
+        <Route path="/AllExam" element={<AllExam />} />
         {/* Add student and admin dashboards here */}
       </Routes>
     </Router>
