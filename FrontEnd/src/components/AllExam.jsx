@@ -16,12 +16,15 @@ import {
   FiLock,
   FiPlusCircle,
   FiAlertCircle,
+  FiSearch,
+  FiFilter,
 } from "react-icons/fi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const AllExam = () => {
   const [exams, setExams] = useState([]);
+  const [filteredExams, setFilteredExams] = useState([]);
   const [selectedExam, setSelectedExam] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -43,6 +46,15 @@ const AllExam = () => {
     correctAnswer: "",
     marks: 1,
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterOption, setFilterOption] = useState("all");
+  const [updatedQuestionData, setUpdatedQuestionData] = useState({
+    questionText: "",
+    questionType: "mcq",
+    options: ["", "", "", ""],
+    correctAnswer: "",
+    marks: 1,
+  });
 
   // Fetch all exams
   useEffect(() => {
@@ -52,12 +64,40 @@ const AllExam = () => {
           "http://localhost:5000/api/exams/exams"
         );
         setExams(response.data);
+        setFilteredExams(response.data);
       } catch (error) {
         console.error("Error fetching exams:", error);
       }
     };
     fetchExams();
   }, []);
+
+  // Apply search and filter
+  useEffect(() => {
+    let result = exams;
+
+    // Apply search
+    if (searchTerm) {
+      result = result.filter(
+        (exam) =>
+          exam.examName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          exam.moduleName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply filter
+    if (filterOption !== "all") {
+      const now = new Date();
+      result = result.filter((exam) => {
+        const examDate = new Date(exam.scheduledDate);
+        if (filterOption === "upcoming") return examDate > now;
+        if (filterOption === "past") return examDate <= now;
+        return true;
+      });
+    }
+
+    setFilteredExams(result);
+  }, [searchTerm, filterOption, exams]);
 
   // Fetch exam details by ID
   const fetchExamDetails = async (examId) => {
@@ -84,6 +124,16 @@ const AllExam = () => {
   // Handle exam selection
   const handleExamSelect = (examId) => {
     fetchExamDetails(examId);
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    setFilterOption(e.target.value);
   };
 
   // Handle exam details update
@@ -191,22 +241,17 @@ const AllExam = () => {
         `http://localhost:5000/api/exams/exams/${selectedExam._id}`
       );
       setSelectedExam(null);
-      setExams(exams.filter((exam) => exam._id !== selectedExam._id));
+      const updatedExams = exams.filter(
+        (exam) => exam._id !== selectedExam._id
+      );
+      setExams(updatedExams);
+      setFilteredExams(updatedExams);
       alert("Exam deleted successfully");
     } catch (error) {
       console.error("Error deleting exam:", error);
       alert("Failed to delete exam");
     }
   };
-
-  // State for updated question data during editing
-  const [updatedQuestionData, setUpdatedQuestionData] = useState({
-    questionText: "",
-    questionType: "mcq",
-    options: ["", "", "", ""],
-    correctAnswer: "",
-    marks: 1,
-  });
 
   // Start editing a question
   const startEditingQuestion = (index) => {
@@ -338,12 +383,46 @@ const AllExam = () => {
                 <FiList className="mr-2" />
                 Scheduled Exams
               </h2>
+
+              {/* Search and Filter Bar */}
+              <div className="mb-4 space-y-3">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiSearch className="text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search exams..."
+                    className="pl-10 w-full rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-gray-700 leading-tight"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                  />
+                </div>
+
+                <div className="flex items-center">
+                  <FiFilter className="text-gray-400 mr-2" />
+                  <select
+                    className="w-full rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 py-2 px-3 text-gray-700 leading-tight"
+                    value={filterOption}
+                    onChange={handleFilterChange}
+                  >
+                    <option value="all">All Exams</option>
+                    <option value="upcoming">Upcoming Exams</option>
+                    <option value="past">Past Exams</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="border-b border-indigo-100 mb-4"></div>
-              {exams.length === 0 ? (
-                <p className="text-gray-500">No exams scheduled yet</p>
+              {filteredExams.length === 0 ? (
+                <p className="text-gray-500">
+                  {exams.length === 0
+                    ? "No exams scheduled yet"
+                    : "No exams match your search"}
+                </p>
               ) : (
                 <div className="space-y-3">
-                  {exams.map((exam) => (
+                  {filteredExams.map((exam) => (
                     <motion.div
                       key={exam._id}
                       whileHover={{ scale: 1.01 }}
