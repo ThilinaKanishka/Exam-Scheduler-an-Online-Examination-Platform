@@ -192,7 +192,7 @@ function AdminPanelFooter() {
           <div className="flex items-center space-x-2">
             <span className="text-indigo-100">Made with</span>
             <FiHeart className="h-4 w-4 text-pink-400 animate-pulse" />
-            <span className="text-indigo-100">by EduTech Team</span>
+            <span className="text-indigo-100">by Thilina Hettiarachchi</span>
           </div>
         </div>
       </div>

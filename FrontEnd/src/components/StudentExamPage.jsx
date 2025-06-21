@@ -35,7 +35,7 @@ import {
   ArrowBack,
   Numbers,
   Person,
-  Fingerprint,
+  CreditCard,
   Badge,
 } from "@mui/icons-material";
 import { styled, keyframes } from "@mui/system";
@@ -184,20 +184,23 @@ const StudentExamPage = () => {
         sx={{
           background: "linear-gradient(135deg, #3f51b5 0%, #2196f3 100%)",
           color: "white",
-          py: 4,
+          py: 2, // reduced from 4
           textAlign: "center",
           width: "100vw",
-          pb: 4,
+          pb: 2, // reduced from 4
           boxShadow: theme.shadows[4],
           mb: 4,
         }}
       >
         <AnimatedBox>
-          <School sx={{ fontSize: 60, mb: 1 }} />
-          <Typography variant="h3" component="h1" gutterBottom>
+          <School sx={{ fontSize: 50, mb: 1 }} />{" "}
+          {/* Optional: reduce icon size too */}
+          <Typography variant="h4" component="h1" gutterBottom>
+            {" "}
+            {/* Slightly smaller text */}
             ExamSync Campus
           </Typography>
-          <Typography variant="h5" component="h2">
+          <Typography variant="h6" component="h2">
             ONLINE EXAMINATION PLATFORM
           </Typography>
         </AnimatedBox>
@@ -213,6 +216,7 @@ const StudentExamPage = () => {
             mb: 3,
             background: "linear-gradient(to right, #ffffff, #f5f7fa)",
             borderLeft: "6px solid #3f51b5",
+            borderRadius: "12px",
           }}
         >
           <Box
@@ -222,7 +226,12 @@ const StudentExamPage = () => {
             flexWrap="wrap"
           >
             <Box>
-              <Typography variant="h4" component="h2" gutterBottom>
+              <Typography
+                variant="h4"
+                component="h2"
+                gutterBottom
+                sx={{ fontWeight: 600 }}
+              >
                 {exam.name}
               </Typography>
 
@@ -249,14 +258,14 @@ const StudentExamPage = () => {
                   sx={{
                     p: 1.5,
                     bgcolor: "#e3f2fd",
-                    borderRadius: 2,
+                    borderRadius: "8px",
                   }}
                 />
 
                 <Chip
                   avatar={
                     <Avatar sx={{ bgcolor: "#2196f3" }}>
-                      <Fingerprint sx={{ color: "white" }} />
+                      <CreditCard sx={{ color: "white" }} />
                     </Avatar>
                   }
                   label={
@@ -267,25 +276,7 @@ const StudentExamPage = () => {
                   sx={{
                     p: 1.5,
                     bgcolor: "#e3f2fd",
-                    borderRadius: 2,
-                  }}
-                />
-
-                <Chip
-                  avatar={
-                    <Avatar sx={{ bgcolor: "#4caf50" }}>
-                      <Badge sx={{ color: "white" }} />
-                    </Avatar>
-                  }
-                  label={
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      Exam ID: {examId}
-                    </Typography>
-                  }
-                  sx={{
-                    p: 1.5,
-                    bgcolor: "#e8f5e9",
-                    borderRadius: 2,
+                    borderRadius: "8px",
                   }}
                 />
               </Box>
@@ -297,8 +288,9 @@ const StudentExamPage = () => {
                 alignItems: "center",
                 bgcolor: theme.palette.mode === "dark" ? "#333" : "#e3f2fd",
                 p: 1.5,
-                borderRadius: 2,
+                borderRadius: "8px",
                 minWidth: 150,
+                border: "1px solid #3f51b5",
               }}
             >
               <AccessTime sx={{ mr: 1, color: "primary.main" }} />
@@ -337,6 +329,7 @@ const StudentExamPage = () => {
                 p: 4,
                 textAlign: "center",
                 bgcolor: "#e8f5e9",
+                borderRadius: "12px",
               }}
             >
               <CheckCircle
@@ -354,6 +347,7 @@ const StudentExamPage = () => {
                 startIcon={<ArrowBack />}
                 onClick={() => navigate("/")}
                 size="large"
+                sx={{ borderRadius: "8px" }}
               >
                 Return to Home
               </Button>
@@ -367,14 +361,23 @@ const StudentExamPage = () => {
           >
             {/* Questions Section */}
             <Box flex={3}>
-              <Paper elevation={2} sx={{ p: 3 }}>
+              <Paper elevation={2} sx={{ p: 3, borderRadius: "12px" }}>
                 <Box id={`question-${activeQuestion}`}>
-                  <Typography variant="h5" component="h3" gutterBottom>
+                  <Typography
+                    variant="h5"
+                    component="h3"
+                    gutterBottom
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
                     <Assignment sx={{ verticalAlign: "middle", mr: 1 }} />
                     Question {activeQuestion + 1} (
                     {questions[activeQuestion]?.marks} marks)
                   </Typography>
-                  <Typography variant="body1" paragraph sx={{ mb: 3 }}>
+                  <Typography
+                    variant="h6"
+                    paragraph
+                    sx={{ mb: 3, fontWeight: 500, lineHeight: 1.6 }}
+                  >
                     {questions[activeQuestion]?.questionText}
                   </Typography>
 
@@ -397,6 +400,7 @@ const StudentExamPage = () => {
                                 p: 2,
                                 mb: 1,
                                 cursor: "pointer",
+                                borderRadius: "8px",
                                 "&:hover": {
                                   bgcolor: "#f5f5f5",
                                 },
@@ -416,7 +420,11 @@ const StudentExamPage = () => {
                               <FormControlLabel
                                 value={option}
                                 control={<Radio />}
-                                label={option}
+                                label={
+                                  <Typography variant="body1">
+                                    {option}
+                                  </Typography>
+                                }
                                 sx={{ width: "100%", m: 0 }}
                               />
                             </Paper>
@@ -438,6 +446,7 @@ const StudentExamPage = () => {
                       fullWidth
                       variant="outlined"
                       placeholder="Type your answer here..."
+                      sx={{ borderRadius: "8px" }}
                     />
                   )}
                 </Box>
@@ -456,6 +465,7 @@ const StudentExamPage = () => {
                       setActiveQuestion((prev) => Math.max(0, prev - 1))
                     }
                     startIcon={<ArrowBack />}
+                    sx={{ borderRadius: "8px" }}
                   >
                     Previous
                   </Button>
@@ -469,6 +479,7 @@ const StudentExamPage = () => {
                           )
                         }
                         endIcon={<Send />}
+                        sx={{ borderRadius: "8px" }}
                       >
                         Next
                       </Button>
@@ -478,7 +489,7 @@ const StudentExamPage = () => {
                         color="success"
                         onClick={() => setConfirmOpen(true)}
                         endIcon={<Send />}
-                        sx={{ px: 4 }}
+                        sx={{ px: 4, borderRadius: "8px" }}
                       >
                         Submit Exam
                       </Button>
@@ -493,7 +504,7 @@ const StudentExamPage = () => {
               flex={1}
               sx={{ position: isMobile ? "static" : "sticky", top: 20 }}
             >
-              <Paper elevation={2} sx={{ p: 2 }}>
+              <Paper elevation={2} sx={{ p: 2, borderRadius: "12px" }}>
                 <Typography
                   variant="h6"
                   gutterBottom
@@ -518,6 +529,7 @@ const StudentExamPage = () => {
                           justifyContent: "center",
                           cursor: "pointer",
                           transition: "all 0.3s",
+                          borderRadius: "8px",
                           bgcolor: answers[questions[index]._id]
                             ? theme.palette.success.light
                             : activeQuestion === index
@@ -579,7 +591,7 @@ const StudentExamPage = () => {
                 </Box>
               </Paper>
 
-              <Paper elevation={2} sx={{ p: 2, mt: 2 }}>
+              <Paper elevation={2} sx={{ p: 2, mt: 2, borderRadius: "12px" }}>
                 <Typography
                   variant="h6"
                   gutterBottom
@@ -625,7 +637,11 @@ const StudentExamPage = () => {
           </Typography>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setConfirmOpen(false)} variant="outlined">
+          <Button
+            onClick={() => setConfirmOpen(false)}
+            variant="outlined"
+            sx={{ borderRadius: "8px" }}
+          >
             Cancel
           </Button>
           <Button
@@ -633,6 +649,7 @@ const StudentExamPage = () => {
             variant="contained"
             color="primary"
             startIcon={<Send />}
+            sx={{ borderRadius: "8px" }}
           >
             Submit Exam
           </Button>
