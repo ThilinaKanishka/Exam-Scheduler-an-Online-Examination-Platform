@@ -13,6 +13,8 @@ import {
   MenuBook as BookIcon,
   ChevronRight as ChevronRightIcon,
   ArrowForward as ArrowRightIcon,
+  Search as SearchIcon,
+  FilterAlt as FilterIcon,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -34,6 +36,9 @@ import {
   Typography,
   styled,
   useTheme,
+  InputAdornment,
+  MenuItem,
+  Chip,
 } from "@mui/material";
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -107,6 +112,7 @@ const Sidebar = styled(Box)(({ theme }) => ({
 const ExamDetailsPage = () => {
   const theme = useTheme();
   const [exams, setExams] = useState([]);
+  const [allExams, setAllExams] = useState([]); // Store all exams for filtering
   const [selectedExam, setSelectedExam] = useState("");
   const [studentDetails, setStudentDetails] = useState({
     studentName: "",
@@ -116,6 +122,8 @@ const ExamDetailsPage = () => {
   const [error, setError] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [acceptedRules, setAcceptedRules] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
 
   const navigate = useNavigate();
 
@@ -123,6 +131,7 @@ const ExamDetailsPage = () => {
     try {
       const response = await axios.get("http://localhost:5000/api/exams/exams");
       setExams(response.data);
+      setAllExams(response.data); // Store all exams for filtering
     } catch (error) {
       console.error("Error fetching exams:", error);
     }
@@ -131,6 +140,27 @@ const ExamDetailsPage = () => {
   React.useEffect(() => {
     fetchExams();
   }, []);
+
+  // Filter exams based on search term and filter
+  React.useEffect(() => {
+    let filtered = allExams;
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (exam) =>
+          exam.examName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          exam.moduleName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply category filter
+    if (filter !== "all") {
+      filtered = filtered.filter((exam) => exam.examType === filter);
+    }
+
+    setExams(filtered);
+  }, [searchTerm, filter, allExams]);
 
   const handleExamSelect = (examId) => {
     setSelectedExam(examId);
@@ -322,10 +352,53 @@ const ExamDetailsPage = () => {
                             <Typography variant="subtitle1" sx={{ mb: 2 }}>
                               Available Exams
                             </Typography>
+
+                            {/* Search and Filter Bar */}
+                            <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+                              <TextField
+                                fullWidth
+                                variant="outlined"
+                                placeholder="Search exams..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <SearchIcon />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+                              <TextField
+                                select
+                                variant="outlined"
+                                value={filter}
+                                onChange={(e) => setFilter(e.target.value)}
+                                sx={{ minWidth: 120 }}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <FilterIcon />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              >
+                                <MenuItem value="all">All Types</MenuItem>
+                                <MenuItem value="quiz">Quiz</MenuItem>
+                                <MenuItem value="midterm">Midterm</MenuItem>
+                                <MenuItem value="final">Final</MenuItem>
+                                <MenuItem value="assignment">
+                                  Assignment
+                                </MenuItem>
+                              </TextField>
+                            </Box>
+
                             {exams.length === 0 ? (
                               <Paper sx={{ p: 3, textAlign: "center" }}>
                                 <Typography color="text.secondary">
-                                  No exams available at this time
+                                  {allExams.length === 0
+                                    ? "No exams available at this time"
+                                    : "No exams match your search criteria"}
                                 </Typography>
                               </Paper>
                             ) : (
@@ -344,11 +417,30 @@ const ExamDetailsPage = () => {
                                         >
                                           {exam.examName}
                                         </Typography>
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            gap: 1,
+                                            mt: 0.5,
+                                            mb: 1,
+                                          }}
+                                        >
+                                          <Chip
+                                            label={exam.examType}
+                                            size="small"
+                                            color="primary"
+                                            variant="outlined"
+                                          />
+                                          <Chip
+                                            label={`${exam.duration} min`}
+                                            size="small"
+                                            icon={
+                                              <ClockIcon fontSize="small" />
+                                            }
+                                          />
+                                        </Box>
                                         <Typography variant="body2">
                                           Module: {exam.moduleName}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                          Duration: {exam.duration} minutes
                                         </Typography>
                                       </Grid>
                                       <Grid item>
