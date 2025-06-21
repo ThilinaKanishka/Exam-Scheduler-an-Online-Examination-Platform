@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import AdminHeader from "./AdminPanelHeader";
-import AdminFooter from "./AdminPanelFooter";
+import AdminHeader from "./ClientHeader";
+import AdminFooter from "./ClientFooter";
 import {
   AccessTime as ClockIcon,
   Warning as AlertTriangleIcon,
