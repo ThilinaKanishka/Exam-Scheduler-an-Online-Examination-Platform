@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Notifications as BellIcon,
   Home as HomeIcon,
@@ -78,26 +79,33 @@ const theme = createTheme({
   },
 });
 
-// Add this styled component to create space below the fixed header
 const ToolbarOffset = styled("div")(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
 
 function AdminPanelHeader() {
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const [activeNav, setActiveNav] = useState("Dashboard");
+  const [examAnchorEl, setExamAnchorEl] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const navItems = [
     { name: "Dashboard", icon: <DashboardIcon /> },
     { name: "Courses", icon: <CourseIcon /> },
-    { name: "Exams", icon: <ExamIcon /> },
+    { name: "Exams", icon: <ExamIcon />, isDropdown: true },
     { name: "Timetable", icon: <TimetableIcon /> },
     { name: "Users", icon: <UsersIcon /> },
     { name: "Instructors", icon: <InstructorIcon /> },
     { name: "Reports", icon: <ReportsIcon /> },
+  ];
+
+  const examMenuItems = [
+    { name: "Schedule New Exam", path: "/AdminScheduleExa" },
+    { name: "All Exams", path: "/AllExam" },
+    { name: "Examination Results", path: "/ResultsPage" },
   ];
 
   const dropdownItems = [
@@ -108,6 +116,7 @@ function AdminPanelHeader() {
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  const isExamMenuOpen = Boolean(examAnchorEl);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -124,6 +133,19 @@ function AdminPanelHeader() {
 
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
+  };
+
+  const handleExamMenuOpen = (event) => {
+    setExamAnchorEl(event.currentTarget);
+  };
+
+  const handleExamMenuClose = () => {
+    setExamAnchorEl(null);
+  };
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    handleExamMenuClose();
   };
 
   const menuId = "primary-search-account-menu";
@@ -249,6 +271,56 @@ function AdminPanelHeader() {
           Log Out
         </Box>
       </MenuItem>
+    </Menu>
+  );
+
+  const renderExamMenu = (
+    <Menu
+      anchorEl={examAnchorEl}
+      open={isExamMenuOpen}
+      onClose={handleExamMenuClose}
+      TransitionComponent={Fade}
+      PaperProps={{
+        elevation: 8,
+        sx: {
+          mt: 1.5,
+          minWidth: 200,
+          borderRadius: 2,
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
+          overflow: "visible",
+          "&:before": {
+            content: '""',
+            display: "block",
+            position: "absolute",
+            top: 0,
+            right: 14,
+            width: 10,
+            height: 10,
+            bgcolor: "background.paper",
+            transform: "translateY(-50%) rotate(45deg)",
+            zIndex: 0,
+          },
+        },
+      }}
+    >
+      {examMenuItems.map((item) => (
+        <MenuItem
+          key={item.name}
+          onClick={() => {
+            setActiveNav(item.name);
+            handleNavigation(item.path);
+          }}
+          sx={{
+            py: 1.5,
+            px: 2,
+            "&:hover": {
+              backgroundColor: "rgba(25, 118, 210, 0.08)",
+            },
+          }}
+        >
+          {item.name}
+        </MenuItem>
+      ))}
     </Menu>
   );
 
@@ -380,30 +452,61 @@ function AdminPanelHeader() {
                 gap: 0.5,
               }}
             >
-              {navItems.map((item) => (
-                <Button
-                  key={item.name}
-                  startIcon={item.icon}
-                  onClick={() => setActiveNav(item.name)}
-                  sx={{
-                    px: 2,
-                    color:
-                      activeNav === item.name
-                        ? "white"
-                        : "rgba(255, 255, 255, 0.8)",
-                    backgroundColor:
-                      activeNav === item.name
-                        ? "rgba(255, 255, 255, 0.15)"
-                        : "transparent",
-                    borderRadius: 2,
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.15)",
-                    },
-                  }}
-                >
-                  {item.name}
-                </Button>
-              ))}
+              {navItems.map((item) => {
+                if (item.isDropdown) {
+                  return (
+                    <Box key={item.name}>
+                      <Button
+                        startIcon={item.icon}
+                        endIcon={<ChevronDownIcon />}
+                        onClick={handleExamMenuOpen}
+                        sx={{
+                          px: 2,
+                          color:
+                            activeNav === item.name || isExamMenuOpen
+                              ? "white"
+                              : "rgba(255, 255, 255, 0.8)",
+                          backgroundColor:
+                            activeNav === item.name || isExamMenuOpen
+                              ? "rgba(255, 255, 255, 0.15)"
+                              : "transparent",
+                          borderRadius: 2,
+                          "&:hover": {
+                            backgroundColor: "rgba(255, 255, 255, 0.15)",
+                          },
+                        }}
+                      >
+                        {item.name}
+                      </Button>
+                      {renderExamMenu}
+                    </Box>
+                  );
+                }
+                return (
+                  <Button
+                    key={item.name}
+                    startIcon={item.icon}
+                    onClick={() => setActiveNav(item.name)}
+                    sx={{
+                      px: 2,
+                      color:
+                        activeNav === item.name
+                          ? "white"
+                          : "rgba(255, 255, 255, 0.8)",
+                      backgroundColor:
+                        activeNav === item.name
+                          ? "rgba(255, 255, 255, 0.15)"
+                          : "transparent",
+                      borderRadius: 2,
+                      "&:hover": {
+                        backgroundColor: "rgba(255, 255, 255, 0.15)",
+                      },
+                    }}
+                  >
+                    {item.name}
+                  </Button>
+                );
+              })}
             </Box>
 
             {/* Right side icons */}
@@ -494,7 +597,6 @@ function AdminPanelHeader() {
             </Box>
           </Toolbar>
         </AppBar>
-        {/* Add this ToolbarOffset component to create space below the header */}
         <ToolbarOffset />
         {renderMobileMenu}
         {renderMenu}
