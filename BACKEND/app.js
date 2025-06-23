@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const RegistrationRoutes = require("./Routes/RegistrationRoute");
 const examinationRoutes = require("./Routes/ExaminationRoute");
+const timetableRoutes = require("./Routes/TimetableRoute");
 
 const app = express();
 const PORT = 5000;
@@ -16,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use("/api", RegistrationRoutes);
 app.use("/api/exams", examinationRoutes);
+app.use("/api/timetables", timetableRoutes);
 
 // MongoDB Connection
 mongoose
