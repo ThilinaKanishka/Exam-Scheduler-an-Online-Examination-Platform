@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const AllTimetable = () => {
   const [timetables, setTimetables] = useState([]);
   const [editingId, setEditingId] = useState(null);
-  const [editedModules, setEditedModules] = useState([]);
+  const [editedTimetable, setEditedTimetable] = useState(null);
   const [newModule, setNewModule] = useState({
     moduleName: "",
     moduleCode: "",
@@ -37,20 +37,21 @@ const AllTimetable = () => {
     fetchTimetables();
   }, []);
 
-  // Edit functionality
   const handleEdit = (timetable) => {
     setEditingId(timetable._id);
-    setEditedModules([...timetable.modules]);
+    setEditedTimetable({
+      ...timetable,
+      modules: timetable.modules.map((module) => ({ ...module })),
+    });
   };
 
-  // Update module fields
   const handleModuleChange = (index, field, value) => {
-    const updatedModules = [...editedModules];
-    updatedModules[index][field] = value;
-    setEditedModules(updatedModules);
+    const updatedModules = editedTimetable.modules.map((module, i) =>
+      i === index ? { ...module, [field]: value } : module
+    );
+    setEditedTimetable({ ...editedTimetable, modules: updatedModules });
   };
 
-  // Add new module to timetable
   const addNewModule = () => {
     if (
       !newModule.moduleName ||
@@ -62,7 +63,10 @@ const AllTimetable = () => {
       return;
     }
 
-    setEditedModules([...editedModules, { ...newModule }]);
+    setEditedTimetable({
+      ...editedTimetable,
+      modules: [...editedTimetable.modules, { ...newModule }],
+    });
     setNewModule({
       moduleName: "",
       moduleCode: "",
@@ -75,21 +79,18 @@ const AllTimetable = () => {
     setError("");
   };
 
-  // Remove module from timetable
   const removeModule = (index) => {
-    const updatedModules = [...editedModules];
-    updatedModules.splice(index, 1);
-    setEditedModules(updatedModules);
+    const updatedModules = editedTimetable.modules.filter(
+      (_, i) => i !== index
+    );
+    setEditedTimetable({ ...editedTimetable, modules: updatedModules });
   };
 
-  // Save changes to backend
   const saveChanges = async () => {
     try {
       const response = await axios.put(
         `http://localhost:5000/api/timetables/${editingId}`,
-        {
-          modules: editedModules,
-        }
+        { modules: editedTimetable.modules }
       );
 
       setTimetables(
@@ -99,93 +100,89 @@ const AllTimetable = () => {
       );
 
       setEditingId(null);
+      setEditedTimetable(null);
       setSuccess("Timetable updated successfully!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to update timetable");
+      setTimeout(() => setError(""), 3000);
     }
   };
 
-  // Generate PDF for download
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this timetable?"))
+      return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/timetables/${id}`);
+      setTimetables(timetables.filter((t) => t._id !== id));
+      setSuccess("Timetable deleted successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to delete timetable");
+      setTimeout(() => setError(""), 3000);
+    }
+  };
+
   const generatePDF = (timetable) => {
-    const doc = new jsPDF();
+    try {
+      const doc = new jsPDF({ orientation: "landscape" });
 
-    // Title
-    doc.setFontSize(16);
-    doc.text(
-      `${timetable.timetableType} Timetable - ${timetable.faculty}` +
-        `${timetable.semester ? ` - ${timetable.semester}` : ""}` +
-        `${timetable.weekType ? ` - ${timetable.weekType}` : ""}`,
-      14,
-      20
-    );
+      doc.text(
+        `${timetable.timetableType} Timetable - ${timetable.faculty}` +
+          `${timetable.semester ? ` - ${timetable.semester}` : ""}` +
+          `${timetable.weekType ? ` - ${timetable.weekType}` : ""}`,
+        14,
+        20
+      );
 
-    // Table data
-    const tableData = timetable.modules.map((module) => [
-      module.moduleName,
-      module.moduleCode,
-      module.instructor,
-      module.venue,
-      module.day,
-      module.startTime,
-      module.endTime,
-    ]);
+      const tableData = timetable.modules.map((module) => [
+        module.moduleName,
+        module.moduleCode,
+        module.instructor,
+        module.venue,
+        module.day,
+        module.startTime,
+        module.endTime,
+      ]);
 
-    // Table headers
-    const headers = [
-      "Module Name",
-      "Module Code",
-      "Instructor",
-      "Venue",
-      "Day",
-      "Start Time",
-      "End Time",
-    ];
+      autoTable(doc, {
+        head: [
+          [
+            "Module Name",
+            "Module Code",
+            "Instructor",
+            "Venue",
+            "Day",
+            "Start Time",
+            "End Time",
+          ],
+        ],
+        body: tableData,
+        startY: 30,
+      });
 
-    // Generate table
-    doc.autoTable({
-      head: [headers],
-      body: tableData,
-      startY: 30,
-      styles: {
-        fontSize: 10,
-        cellPadding: 2,
-        valign: "middle",
-      },
-      headStyles: {
-        fillColor: [220, 220, 220],
-        textColor: [0, 0, 0],
-        fontStyle: "bold",
-      },
-    });
-
-    // Save the PDF
-    doc.save(`${timetable.timetableType}_${timetable.faculty}_timetable.pdf`);
+      doc.save(`${timetable.timetableType}_${timetable.faculty}_timetable.pdf`);
+    } catch (err) {
+      setError("Failed to generate PDF: " + err.message);
+      setTimeout(() => setError(""), 3000);
+    }
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div>
       <h2>All Generated Timetables</h2>
-      {success && (
-        <div style={{ color: "green", marginBottom: "10px" }}>{success}</div>
-      )}
+      {success && <div className="success-message">{success}</div>}
 
       {timetables.length === 0 ? (
         <div>No timetables found</div>
       ) : (
         <div>
           {timetables.map((timetable) => (
-            <div
-              key={timetable._id}
-              style={{
-                border: "1px solid #ccc",
-                padding: "10px",
-                margin: "10px 0",
-              }}
-            >
+            <div key={timetable._id} className="timetable-container">
               <h3>
                 {timetable.timetableType} - {timetable.faculty}
                 {timetable.semester && ` - ${timetable.semester}`}
@@ -194,7 +191,7 @@ const AllTimetable = () => {
 
               {editingId === timetable._id ? (
                 <>
-                  <table border="1" style={{ width: "100%" }}>
+                  <table border="1" className="edit-table">
                     <thead>
                       <tr>
                         <th>Module Name</th>
@@ -208,7 +205,7 @@ const AllTimetable = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {editedModules.map((module, idx) => (
+                      {editedTimetable?.modules?.map((module, idx) => (
                         <tr key={idx}>
                           <td>
                             <input
@@ -316,21 +313,9 @@ const AllTimetable = () => {
                     </tbody>
                   </table>
 
-                  <div
-                    style={{
-                      margin: "10px 0",
-                      padding: "10px",
-                      border: "1px dashed #ccc",
-                    }}
-                  >
+                  <div className="add-module-form">
                     <h4>Add New Module</h4>
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(4, 1fr)",
-                        gap: "10px",
-                      }}
-                    >
+                    <div>
                       <div>
                         <label>Module Name:</label>
                         <input
@@ -432,25 +417,18 @@ const AllTimetable = () => {
                           }
                         />
                       </div>
-                      <div>
-                        <button onClick={addNewModule}>Add Module</button>
-                      </div>
+                      <button onClick={addNewModule}>Add Module</button>
                     </div>
                   </div>
 
-                  <div style={{ marginTop: "10px" }}>
+                  <div className="edit-actions">
                     <button onClick={saveChanges}>Save Changes</button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      style={{ marginLeft: "10px" }}
-                    >
-                      Cancel
-                    </button>
+                    <button onClick={() => setEditingId(null)}>Cancel</button>
                   </div>
                 </>
               ) : (
                 <>
-                  <table border="1" style={{ width: "100%" }}>
+                  <table border="1" className="view-table">
                     <thead>
                       <tr>
                         <th>Module Name</th>
@@ -477,20 +455,12 @@ const AllTimetable = () => {
                     </tbody>
                   </table>
 
-                  <div style={{ marginTop: "10px" }}>
+                  <div className="timetable-actions">
                     <button onClick={() => generatePDF(timetable)}>
                       Download PDF
                     </button>
-                    <button
-                      onClick={() => handleEdit(timetable)}
-                      style={{ marginLeft: "10px" }}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(timetable._id)}
-                      style={{ marginLeft: "10px" }}
-                    >
+                    <button onClick={() => handleEdit(timetable)}>Edit</button>
+                    <button onClick={() => handleDelete(timetable._id)}>
                       Delete
                     </button>
                   </div>
