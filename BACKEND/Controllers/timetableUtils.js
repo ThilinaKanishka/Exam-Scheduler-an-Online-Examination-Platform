@@ -3,29 +3,34 @@ const generateRandomTime = (minTime, maxTime) => {
   const [minHour, minMinute] = minTime.split(":").map(Number);
   const [maxHour, maxMinute] = maxTime.split(":").map(Number);
 
-  const minTotal = minHour * 60 + minMinute;
-  const maxTotal = maxHour * 60 + maxMinute;
+  // Convert to total minutes but ensure we're working with whole hours
+  const minTotal = minHour * 60 + (minMinute > 0 ? 60 - minMinute : 0);
+  const maxTotal = maxHour * 60;
 
-  // Generate random duration between 1-3 hours
-  const duration = Math.floor(Math.random() * 120 + 60); // 60-180 minutes
+  // Generate random duration between 2-3 hours (in whole hours)
+  const duration = Math.floor(Math.random() * 2 + 2) * 60; // 2 or 3 hours (120 or 180 minutes)
 
-  // Make sure the end time doesn't exceed maxTime
-  const adjustedMax = Math.min(maxTotal, minTotal + 180);
-  const startTotal = Math.floor(
-    Math.random() * (adjustedMax - minTotal - duration) + minTotal
-  );
-  const endTotal = startTotal + duration;
+  // Calculate possible start hours
+  const possibleStartHours = [];
+  for (let hour = minHour; hour <= maxHour - duration / 60; hour++) {
+    possibleStartHours.push(hour);
+  }
 
-  const startHour = Math.floor(startTotal / 60);
-  const startMinute = startTotal % 60;
-  const endHour = Math.floor(endTotal / 60);
-  const endMinute = endTotal % 60;
+  // If no valid start hours (edge case), use minimum possible
+  const startHour =
+    possibleStartHours.length > 0
+      ? possibleStartHours[
+          Math.floor(Math.random() * possibleStartHours.length)
+        ]
+      : minHour;
+
+  const endHour = startHour + duration / 60;
 
   const format = (num) => num.toString().padStart(2, "0");
 
   return {
-    startTime: `${format(startHour)}:${format(startMinute)}`,
-    endTime: `${format(endHour)}:${format(endMinute)}`,
+    startTime: `${format(startHour)}:00`,
+    endTime: `${format(endHour)}:00`,
   };
 };
 
