@@ -1,8 +1,7 @@
+// timetableController.js
+
 const Timetable = require("../Model/TimetableModel");
-const {
-  generateRandomTime,
-  getRandomDays,
-} = require("../Controllers/timetableUtils");
+const { generateTimeSlots, getRandomDays } = require("./timetableUtils");
 
 // Generate timetable
 exports.generateTimetable = async (req, res) => {
@@ -45,7 +44,7 @@ exports.generateTimetable = async (req, res) => {
           const moduleDays = getRandomDays(days, 1, 2);
 
           moduleDays.forEach((day) => {
-            const { startTime, endTime } = generateRandomTime("08:00", "20:00");
+            const { startTime, endTime } = generateTimeSlots();
             processedModules.push({
               ...module,
               day,
@@ -58,7 +57,7 @@ exports.generateTimetable = async (req, res) => {
         // Weekend timetable - only Saturday and Sunday
         modules.forEach((module) => {
           const day = Math.random() > 0.5 ? "Saturday" : "Sunday";
-          const { startTime, endTime } = generateRandomTime("08:00", "20:00");
+          const { startTime, endTime } = generateTimeSlots();
           processedModules.push({
             ...module,
             day,
@@ -82,7 +81,7 @@ exports.generateTimetable = async (req, res) => {
 
       modules.slice(0, 7).forEach((module, index) => {
         const day = shuffledDays[index % shuffledDays.length];
-        const { startTime, endTime } = generateRandomTime("08:00", "20:00");
+        const { startTime, endTime } = generateTimeSlots();
         processedModules.push({
           ...module,
           day,

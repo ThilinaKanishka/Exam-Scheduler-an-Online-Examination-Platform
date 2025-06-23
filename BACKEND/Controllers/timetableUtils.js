@@ -1,37 +1,18 @@
-// Generate random time between min and max (format: "HH:MM")
-const generateRandomTime = (minTime, maxTime) => {
-  const [minHour, minMinute] = minTime.split(":").map(Number);
-  const [maxHour, maxMinute] = maxTime.split(":").map(Number);
+// timetableUtils.js
 
-  // Convert to total minutes but ensure we're working with whole hours
-  const minTotal = minHour * 60 + (minMinute > 0 ? 60 - minMinute : 0);
-  const maxTotal = maxHour * 60;
+// Generate consistent time slots for both WD and WE
+const generateTimeSlots = () => {
+  // Define fixed time slots for consistency
+  const timeSlots = [
+    { startTime: "08:00", endTime: "10:00" },
+    { startTime: "10:00", endTime: "12:00" },
+    { startTime: "13:00", endTime: "15:00" },
+    { startTime: "15:00", endTime: "17:00" },
+    { startTime: "17:00", endTime: "19:00" },
+  ];
 
-  // Generate random duration between 2-3 hours (in whole hours)
-  const duration = Math.floor(Math.random() * 2 + 2) * 60; // 2 or 3 hours (120 or 180 minutes)
-
-  // Calculate possible start hours
-  const possibleStartHours = [];
-  for (let hour = minHour; hour <= maxHour - duration / 60; hour++) {
-    possibleStartHours.push(hour);
-  }
-
-  // If no valid start hours (edge case), use minimum possible
-  const startHour =
-    possibleStartHours.length > 0
-      ? possibleStartHours[
-          Math.floor(Math.random() * possibleStartHours.length)
-        ]
-      : minHour;
-
-  const endHour = startHour + duration / 60;
-
-  const format = (num) => num.toString().padStart(2, "0");
-
-  return {
-    startTime: `${format(startHour)}:00`,
-    endTime: `${format(endHour)}:00`,
-  };
+  // Return a random time slot from the predefined slots
+  return timeSlots[Math.floor(Math.random() * timeSlots.length)];
 };
 
 // Get random days (1-2 days for WD timetable)
@@ -42,6 +23,6 @@ const getRandomDays = (days, min, max) => {
 };
 
 module.exports = {
-  generateRandomTime,
+  generateTimeSlots,
   getRandomDays,
 };

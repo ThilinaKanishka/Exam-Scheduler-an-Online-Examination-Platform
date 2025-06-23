@@ -126,17 +126,79 @@ const AllTimetable = () => {
 
   const generatePDF = (timetable) => {
     try {
-      const doc = new jsPDF({ orientation: "landscape" });
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+      });
 
+      // Header with gradient background
+      doc.setFillColor(30, 58, 138);
+      doc.rect(0, 0, doc.internal.pageSize.getWidth(), 25, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text("ExamSync Campus", doc.internal.pageSize.getWidth() / 2, 17, {
+        align: "center",
+      });
+
+      doc.setTextColor(30, 58, 138);
+      doc.setFontSize(16);
       doc.text(
-        `${timetable.timetableType} Timetable - ${timetable.faculty}` +
-          `${timetable.semester ? ` - ${timetable.semester}` : ""}` +
-          `${timetable.weekType ? ` - ${timetable.weekType}` : ""}`,
-        14,
-        20
+        `${timetable.timetableType.toUpperCase()} TIMETABLE`,
+        doc.internal.pageSize.getWidth() / 2,
+        35,
+        {
+          align: "center",
+        }
       );
 
-      const tableData = timetable.modules.map((module) => [
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "normal");
+
+      doc.text(`Faculty: ${timetable.faculty || "N/A"}`, 15, 45);
+      if (timetable.semester) {
+        doc.text(`Semester: ${timetable.semester}`, 15, 52);
+      }
+      if (timetable.weekType) {
+        doc.text(`Week Type: ${timetable.weekType}`, 15, 59);
+      }
+
+      doc.text(
+        `Academic Year: 2023/2024`,
+        doc.internal.pageSize.getWidth() - 15,
+        45,
+        {
+          align: "right",
+        }
+      );
+      doc.text(
+        `Report Date: ${new Date().toLocaleDateString()}`,
+        doc.internal.pageSize.getWidth() - 15,
+        52,
+        {
+          align: "right",
+        }
+      );
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(15, 65, doc.internal.pageSize.getWidth() - 15, 65);
+
+      // Table data preparation
+      const headers = [
+        [
+          "Day",
+          "Module Name",
+          "Module Code",
+          "Venue",
+          "Start Time",
+          "End Time",
+          "Instructor",
+        ],
+      ];
+
+      const data = timetable.modules.map((module) => [
         module.day,
         module.moduleName,
         module.moduleCode,
@@ -147,28 +209,57 @@ const AllTimetable = () => {
       ]);
 
       autoTable(doc, {
-        head: [
-          [
-            "Day",
-            "Module Name",
-            "Module Code",
-            "Venue",
-            "Start Time",
-            "End Time",
-            "Instructor",
-          ],
-        ],
-        body: tableData,
-        startY: 30,
+        head: headers,
+        body: data,
+        startY: 70,
+        margin: { left: 5, right: 5 },
+        tableWidth: "auto",
+        headStyles: {
+          fillColor: [30, 58, 138],
+          textColor: 255,
+          fontStyle: "bold",
+          fontSize: 10,
+          cellPadding: 4,
+        },
+        bodyStyles: {
+          fontSize: 9,
+          cellPadding: 3,
+        },
+        alternateRowStyles: {
+          fillColor: [240, 240, 240],
+        },
+        columnStyles: {
+          0: { cellWidth: 20, halign: "center" },
+          1: { cellWidth: "auto" },
+          2: { cellWidth: 25, halign: "center" },
+          3: { cellWidth: 25, halign: "center" },
+          4: { cellWidth: 20, halign: "center" },
+          5: { cellWidth: 20, halign: "center" },
+          6: { cellWidth: "auto" },
+        },
+        didDrawPage: (data) => {
+          doc.setFontSize(8);
+          doc.setTextColor(100);
+          doc.text(
+            `Page ${data.pageNumber} of ${
+              data.pageCount
+            } - Auto Generated Report | ${new Date().toLocaleString()}`,
+            doc.internal.pageSize.getWidth() / 2,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: "center" }
+          );
+        },
       });
 
-      doc.save(`${timetable.timetableType}_${timetable.faculty}_timetable.pdf`);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      doc.save(
+        `ExamSync_Timetable_${timetable.timetableType}_${timetable.faculty}_${timestamp}.pdf`
+      );
     } catch (err) {
       setError("Failed to generate PDF: " + err.message);
       setTimeout(() => setError(""), 3000);
     }
   };
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 

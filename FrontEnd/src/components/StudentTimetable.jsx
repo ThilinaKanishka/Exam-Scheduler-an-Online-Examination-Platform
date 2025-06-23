@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const StudentTimetable = () => {
   const [timetables, setTimetables] = useState([]);
@@ -8,6 +10,8 @@ const StudentTimetable = () => {
   const [timetableType, setTimetableType] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [pdfSuccess, setPdfSuccess] = useState(false);
+  const [pdfError, setPdfError] = useState(null);
 
   useEffect(() => {
     const fetchTimetables = async () => {
@@ -28,11 +32,150 @@ const StudentTimetable = () => {
   }, [faculty, timetableType]);
 
   const downloadAsPDF = (timetable) => {
-    // This is a placeholder - in a real app you would generate a PDF
-    console.log("Downloading timetable as PDF:", timetable);
-    alert(
-      `PDF download for ${timetable.timetableType} timetable would be implemented here`
-    );
+    try {
+      setPdfSuccess(false);
+      setPdfError(null);
+
+      if (!timetable.modules || timetable.modules.length === 0) {
+        throw new Error("No modules available to generate PDF");
+      }
+
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+      });
+
+      // Header with gradient background
+      doc.setFillColor(30, 58, 138);
+      doc.rect(0, 0, doc.internal.pageSize.getWidth(), 25, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text("ExamSync Campus", doc.internal.pageSize.getWidth() / 2, 17, {
+        align: "center",
+      });
+
+      doc.setTextColor(30, 58, 138);
+      doc.setFontSize(16);
+      doc.text(
+        `${timetable.timetableType.toUpperCase()} TIMETABLE`,
+        doc.internal.pageSize.getWidth() / 2,
+        35,
+        {
+          align: "center",
+        }
+      );
+
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "normal");
+
+      doc.text(`Faculty: ${timetable.faculty || "N/A"}`, 15, 45);
+      if (timetable.semester) {
+        doc.text(`Semester: ${timetable.semester}`, 15, 52);
+      }
+      if (timetable.weekType) {
+        doc.text(`Week Type: ${timetable.weekType}`, 15, 59);
+      }
+
+      doc.text(
+        `Academic Year: 2023/2024`,
+        doc.internal.pageSize.getWidth() - 15,
+        45,
+        {
+          align: "right",
+        }
+      );
+      doc.text(
+        `Report Date: ${new Date().toLocaleDateString()}`,
+        doc.internal.pageSize.getWidth() - 15,
+        52,
+        {
+          align: "right",
+        }
+      );
+
+      doc.setDrawColor(200, 200, 200);
+      doc.line(15, 65, doc.internal.pageSize.getWidth() - 15, 65);
+
+      // Table data preparation
+      const headers = [
+        [
+          "Day",
+          "Module Name",
+          "Module Code",
+          "Venue",
+          "Start Time",
+          "End Time",
+          "Instructor",
+        ],
+      ];
+
+      const data = timetable.modules.map((module) => [
+        module.day,
+        module.moduleName,
+        module.moduleCode,
+        module.venue,
+        module.startTime,
+        module.endTime,
+        module.instructor,
+      ]);
+
+      autoTable(doc, {
+        head: headers,
+        body: data,
+        startY: 70,
+        margin: { left: 5, right: 5 },
+        tableWidth: "auto",
+        headStyles: {
+          fillColor: [30, 58, 138],
+          textColor: 255,
+          fontStyle: "bold",
+          fontSize: 10,
+          cellPadding: 4,
+        },
+        bodyStyles: {
+          fontSize: 9,
+          cellPadding: 3,
+        },
+        alternateRowStyles: {
+          fillColor: [240, 240, 240],
+        },
+        columnStyles: {
+          0: { cellWidth: 20, halign: "center" },
+          1: { cellWidth: "auto" },
+          2: { cellWidth: 25, halign: "center" },
+          3: { cellWidth: 25, halign: "center" },
+          4: { cellWidth: 20, halign: "center" },
+          5: { cellWidth: 20, halign: "center" },
+          6: { cellWidth: "auto" },
+        },
+        didDrawPage: (data) => {
+          doc.setFontSize(8);
+          doc.setTextColor(100);
+          doc.text(
+            `Page ${data.pageNumber} of ${
+              data.pageCount
+            } - Auto Generated Report | ${new Date().toLocaleString()}`,
+            doc.internal.pageSize.getWidth() / 2,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: "center" }
+          );
+        },
+      });
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      doc.save(
+        `ExamSync_Timetable_${timetable.timetableType}_${timetable.faculty}_${timestamp}.pdf`
+      );
+
+      setPdfSuccess(true);
+      setTimeout(() => setPdfSuccess(false), 3000);
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      setPdfError(error.message);
+    }
   };
 
   if (loading) return <div>Loading...</div>;
@@ -41,6 +184,15 @@ const StudentTimetable = () => {
   return (
     <div>
       <h2>Student Timetable View</h2>
+
+      {pdfSuccess && (
+        <div style={{ color: "green", marginBottom: "10px" }}>
+          PDF generated successfully!
+        </div>
+      )}
+      {pdfError && (
+        <div style={{ color: "red", marginBottom: "10px" }}>{pdfError}</div>
+      )}
 
       <div style={{ marginBottom: "20px" }}>
         <label>Faculty: </label>
