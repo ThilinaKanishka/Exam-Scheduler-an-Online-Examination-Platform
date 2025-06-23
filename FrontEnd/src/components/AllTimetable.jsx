@@ -137,25 +137,25 @@ const AllTimetable = () => {
       );
 
       const tableData = timetable.modules.map((module) => [
+        module.day,
         module.moduleName,
         module.moduleCode,
-        module.instructor,
         module.venue,
-        module.day,
         module.startTime,
         module.endTime,
+        module.instructor,
       ]);
 
       autoTable(doc, {
         head: [
           [
+            "Day",
             "Module Name",
             "Module Code",
-            "Instructor",
             "Venue",
-            "Day",
             "Start Time",
             "End Time",
+            "Instructor",
           ],
         ],
         body: tableData,
@@ -194,19 +194,41 @@ const AllTimetable = () => {
                   <table border="1" className="edit-table">
                     <thead>
                       <tr>
+                        <th>Day</th>
                         <th>Module Name</th>
                         <th>Module Code</th>
-                        <th>Instructor</th>
                         <th>Venue</th>
-                        <th>Day</th>
                         <th>Start Time</th>
                         <th>End Time</th>
+                        <th>Instructor</th>
                         <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {editedTimetable?.modules?.map((module, idx) => (
                         <tr key={idx}>
+                          <td>
+                            <select
+                              value={module.day}
+                              onChange={(e) =>
+                                handleModuleChange(idx, "day", e.target.value)
+                              }
+                            >
+                              {[
+                                "Monday",
+                                "Tuesday",
+                                "Wednesday",
+                                "Thursday",
+                                "Friday",
+                                "Saturday",
+                                "Sunday",
+                              ].map((day) => (
+                                <option key={day} value={day}>
+                                  {day}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
                           <td>
                             <input
                               type="text"
@@ -236,46 +258,11 @@ const AllTimetable = () => {
                           <td>
                             <input
                               type="text"
-                              value={module.instructor}
-                              onChange={(e) =>
-                                handleModuleChange(
-                                  idx,
-                                  "instructor",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
                               value={module.venue}
                               onChange={(e) =>
                                 handleModuleChange(idx, "venue", e.target.value)
                               }
                             />
-                          </td>
-                          <td>
-                            <select
-                              value={module.day}
-                              onChange={(e) =>
-                                handleModuleChange(idx, "day", e.target.value)
-                              }
-                            >
-                              {[
-                                "Monday",
-                                "Tuesday",
-                                "Wednesday",
-                                "Thursday",
-                                "Friday",
-                                "Saturday",
-                                "Sunday",
-                              ].map((day) => (
-                                <option key={day} value={day}>
-                                  {day}
-                                </option>
-                              ))}
-                            </select>
                           </td>
                           <td>
                             <input
@@ -298,6 +285,19 @@ const AllTimetable = () => {
                                 handleModuleChange(
                                   idx,
                                   "endTime",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              value={module.instructor}
+                              onChange={(e) =>
+                                handleModuleChange(
+                                  idx,
+                                  "instructor",
                                   e.target.value
                                 )
                               }
@@ -431,25 +431,25 @@ const AllTimetable = () => {
                   <table border="1" className="view-table">
                     <thead>
                       <tr>
+                        <th>Day</th>
                         <th>Module Name</th>
                         <th>Module Code</th>
-                        <th>Instructor</th>
                         <th>Venue</th>
-                        <th>Day</th>
                         <th>Start Time</th>
                         <th>End Time</th>
+                        <th>Instructor</th>
                       </tr>
                     </thead>
                     <tbody>
                       {timetable.modules.map((module, idx) => (
                         <tr key={idx}>
+                          <td>{module.day}</td>
                           <td>{module.moduleName}</td>
                           <td>{module.moduleCode}</td>
-                          <td>{module.instructor}</td>
                           <td>{module.venue}</td>
-                          <td>{module.day}</td>
                           <td>{module.startTime}</td>
                           <td>{module.endTime}</td>
+                          <td>{module.instructor}</td>
                         </tr>
                       ))}
                     </tbody>
