@@ -33,13 +33,6 @@ const StudentTimetable = () => {
 
   const downloadAsPDF = (timetable) => {
     try {
-      setPdfSuccess(false);
-      setPdfError(null);
-
-      if (!timetable.modules || timetable.modules.length === 0) {
-        throw new Error("No modules available to generate PDF");
-      }
-
       const doc = new jsPDF({
         orientation: "landscape",
         unit: "mm",
@@ -59,12 +52,12 @@ const StudentTimetable = () => {
       doc.setTextColor(30, 58, 138);
       doc.setFontSize(16);
       doc.text(
-        `${timetable.timetableType.toUpperCase()} TIMETABLE`,
+        `${timetable.timetableType.toUpperCase()} TIMETABLE - ${
+          timetable.semester || ""
+        }`,
         doc.internal.pageSize.getWidth() / 2,
         35,
-        {
-          align: "center",
-        }
+        { align: "center" }
       );
 
       doc.setFontSize(12);
@@ -78,29 +71,24 @@ const StudentTimetable = () => {
       if (timetable.weekType) {
         doc.text(`Week Type: ${timetable.weekType}`, 15, 59);
       }
-      if (timetable.examType) {
-        doc.text(`Exam Type: ${timetable.examType}`, 15, 66);
-      }
 
       doc.text(
-        `Academic Year: 2023/2024`,
+        `Academic Year: ${new Date().getFullYear()}/${
+          new Date().getFullYear() + 1
+        }`,
         doc.internal.pageSize.getWidth() - 15,
         45,
-        {
-          align: "right",
-        }
+        { align: "right" }
       );
       doc.text(
-        `Report Date: ${new Date().toLocaleDateString()}`,
+        `Generated: ${new Date().toLocaleDateString()}`,
         doc.internal.pageSize.getWidth() - 15,
         52,
-        {
-          align: "right",
-        }
+        { align: "right" }
       );
 
       doc.setDrawColor(200, 200, 200);
-      doc.line(15, 75, doc.internal.pageSize.getWidth() - 15, 75);
+      doc.line(15, 70, doc.internal.pageSize.getWidth() - 15, 70);
 
       // Table data preparation
       const headers = [
@@ -125,14 +113,14 @@ const StudentTimetable = () => {
         module.endTime,
         module.instructor,
         ...(timetable.timetableType !== "All Semester"
-          ? [module.examType || timetable.examType || "N/A"]
+          ? [module.examType || "N/A"]
           : []),
       ]);
 
       autoTable(doc, {
         head: headers,
         body: data,
-        startY: 80,
+        startY: 75,
         margin: { left: 5, right: 5 },
         tableWidth: "auto",
         headStyles: {
@@ -165,9 +153,7 @@ const StudentTimetable = () => {
           doc.setFontSize(8);
           doc.setTextColor(100);
           doc.text(
-            `Page ${data.pageNumber} of ${
-              data.pageCount
-            } - Auto Generated Report | ${new Date().toLocaleString()}`,
+            `Page ${data.pageNumber} of ${data.pageCount}`,
             doc.internal.pageSize.getWidth() / 2,
             doc.internal.pageSize.getHeight() - 10,
             { align: "center" }
@@ -176,9 +162,11 @@ const StudentTimetable = () => {
       });
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      doc.save(
-        `ExamSync_Timetable_${timetable.timetableType}_${timetable.faculty}_${timestamp}.pdf`
-      );
+      const filename = `ExamSync_${timetable.timetableType.replace(
+        /\s+/g,
+        "_"
+      )}_${timetable.faculty}_${timetable.semester || ""}_${timestamp}.pdf`;
+      doc.save(filename);
 
       setPdfSuccess(true);
       setTimeout(() => setPdfSuccess(false), 3000);

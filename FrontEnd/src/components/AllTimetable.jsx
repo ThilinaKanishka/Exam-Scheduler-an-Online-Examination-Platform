@@ -60,14 +60,34 @@ const AllTimetable = () => {
       !newModule.instructor ||
       !newModule.venue
     ) {
-      setError("Please fill all module fields");
+      setError("Please fill all required module fields");
       return;
+    }
+
+    // Create module without examType by default
+    const moduleToAdd = {
+      moduleName: newModule.moduleName,
+      moduleCode: newModule.moduleCode,
+      instructor: newModule.instructor,
+      venue: newModule.venue,
+      day: newModule.day,
+      startTime: newModule.startTime,
+      endTime: newModule.endTime,
+    };
+
+    // Only add examType if it's an exam timetable and value is provided
+    if (
+      editedTimetable.timetableType !== "All Semester" &&
+      newModule.examType
+    ) {
+      moduleToAdd.examType = newModule.examType;
     }
 
     setEditedTimetable({
       ...editedTimetable,
-      modules: [...editedTimetable.modules, { ...newModule }],
+      modules: [...editedTimetable.modules, moduleToAdd],
     });
+
     setNewModule({
       moduleName: "",
       moduleCode: "",
@@ -90,6 +110,18 @@ const AllTimetable = () => {
 
   const saveChanges = async () => {
     try {
+      // Validate exam types for exam timetables
+      if (editedTimetable.timetableType !== "All Semester") {
+        const modulesWithoutExamType = editedTimetable.modules.filter(
+          (module) => !module.examType
+        );
+        if (modulesWithoutExamType.length > 0) {
+          throw new Error(
+            "All modules must have an exam type for exam timetables"
+          );
+        }
+      }
+
       const response = await axios.put(
         `http://localhost:5000/api/timetables/${editingId}`,
         { modules: editedTimetable.modules }
@@ -106,7 +138,9 @@ const AllTimetable = () => {
       setSuccess("Timetable updated successfully!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to update timetable");
+      setError(
+        err.response?.data?.error || err.message || "Failed to update timetable"
+      );
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -147,12 +181,12 @@ const AllTimetable = () => {
       doc.setTextColor(30, 58, 138);
       doc.setFontSize(16);
       doc.text(
-        `${timetable.timetableType.toUpperCase()} TIMETABLE`,
+        `${timetable.timetableType.toUpperCase()} TIMETABLE - ${
+          timetable.semester || ""
+        }`,
         doc.internal.pageSize.getWidth() / 2,
         35,
-        {
-          align: "center",
-        }
+        { align: "center" }
       );
 
       doc.setFontSize(12);
@@ -166,29 +200,24 @@ const AllTimetable = () => {
       if (timetable.weekType) {
         doc.text(`Week Type: ${timetable.weekType}`, 15, 59);
       }
-      if (timetable.examType) {
-        doc.text(`Exam Type: ${timetable.examType}`, 15, 66);
-      }
 
       doc.text(
-        `Academic Year: 2023/2024`,
+        `Academic Year: ${new Date().getFullYear()}/${
+          new Date().getFullYear() + 1
+        }`,
         doc.internal.pageSize.getWidth() - 15,
         45,
-        {
-          align: "right",
-        }
+        { align: "right" }
       );
       doc.text(
-        `Report Date: ${new Date().toLocaleDateString()}`,
+        `Generated: ${new Date().toLocaleDateString()}`,
         doc.internal.pageSize.getWidth() - 15,
         52,
-        {
-          align: "right",
-        }
+        { align: "right" }
       );
 
       doc.setDrawColor(200, 200, 200);
-      doc.line(15, 75, doc.internal.pageSize.getWidth() - 15, 75);
+      doc.line(15, 70, doc.internal.pageSize.getWidth() - 15, 70);
 
       // Table data preparation
       const headers = [
@@ -213,14 +242,14 @@ const AllTimetable = () => {
         module.endTime,
         module.instructor,
         ...(timetable.timetableType !== "All Semester"
-          ? [module.examType || timetable.examType || "N/A"]
+          ? [module.examType || "N/A"]
           : []),
       ]);
 
       autoTable(doc, {
         head: headers,
         body: data,
-        startY: 80,
+        startY: 75,
         margin: { left: 5, right: 5 },
         tableWidth: "auto",
         headStyles: {
@@ -253,9 +282,7 @@ const AllTimetable = () => {
           doc.setFontSize(8);
           doc.setTextColor(100);
           doc.text(
-            `Page ${data.pageNumber} of ${
-              data.pageCount
-            } - Auto Generated Report | ${new Date().toLocaleString()}`,
+            `Page ${data.pageNumber} of ${data.pageCount}`,
             doc.internal.pageSize.getWidth() / 2,
             doc.internal.pageSize.getHeight() - 10,
             { align: "center" }
@@ -264,39 +291,39 @@ const AllTimetable = () => {
       });
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      doc.save(
-        `ExamSync_Timetable_${timetable.timetableType}_${timetable.faculty}_${timestamp}.pdf`
-      );
+      const filename = `ExamSync_${timetable.timetableType.replace(
+        /\s+/g,
+        "_"
+      )}_${timetable.faculty}_${timetable.semester || ""}_${timestamp}.pdf`;
+      doc.save(filename);
     } catch (err) {
       setError("Failed to generate PDF: " + err.message);
       setTimeout(() => setError(""), 3000);
     }
   };
-
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
-    <div>
+    <div className="timetable-admin-container">
       <h2>All Generated Timetables</h2>
       {success && <div className="success-message">{success}</div>}
 
       {timetables.length === 0 ? (
         <div>No timetables found</div>
       ) : (
-        <div>
+        <div className="timetable-list">
           {timetables.map((timetable) => (
-            <div key={timetable._id} className="timetable-container">
+            <div key={timetable._id} className="timetable-card">
               <h3>
                 {timetable.timetableType} - {timetable.faculty}
                 {timetable.semester && ` - ${timetable.semester}`}
                 {timetable.weekType && ` - ${timetable.weekType}`}
-                {timetable.examType && ` - ${timetable.examType}`}
               </h3>
 
               {editingId === timetable._id ? (
                 <>
-                  <table border="1" className="edit-table">
+                  <table className="edit-table">
                     <thead>
                       <tr>
                         <th>Day</th>
@@ -423,7 +450,7 @@ const AllTimetable = () => {
                                   )
                                 }
                               >
-                                <option value="">Use Default</option>
+                                <option value="">Select Type</option>
                                 <option value="physics">Physical</option>
                                 <option value="computer base">
                                   Computer Base
@@ -432,7 +459,10 @@ const AllTimetable = () => {
                             </td>
                           )}
                           <td>
-                            <button onClick={() => removeModule(idx)}>
+                            <button
+                              onClick={() => removeModule(idx)}
+                              className="remove-btn"
+                            >
                               Remove
                             </button>
                           </td>
@@ -443,8 +473,8 @@ const AllTimetable = () => {
 
                   <div className="add-module-form">
                     <h4>Add New Module</h4>
-                    <div>
-                      <div>
+                    <div className="form-grid">
+                      <div className="form-group">
                         <label>Module Name:</label>
                         <input
                           type="text"
@@ -457,7 +487,7 @@ const AllTimetable = () => {
                           }
                         />
                       </div>
-                      <div>
+                      <div className="form-group">
                         <label>Module Code:</label>
                         <input
                           type="text"
@@ -470,7 +500,7 @@ const AllTimetable = () => {
                           }
                         />
                       </div>
-                      <div>
+                      <div className="form-group">
                         <label>Instructor:</label>
                         <input
                           type="text"
@@ -483,7 +513,7 @@ const AllTimetable = () => {
                           }
                         />
                       </div>
-                      <div>
+                      <div className="form-group">
                         <label>Venue:</label>
                         <input
                           type="text"
@@ -497,7 +527,7 @@ const AllTimetable = () => {
                         />
                       </div>
                       {timetable.timetableType !== "All Semester" && (
-                        <div>
+                        <div className="form-group">
                           <label>Exam Type:</label>
                           <select
                             value={newModule.examType}
@@ -508,13 +538,13 @@ const AllTimetable = () => {
                               })
                             }
                           >
-                            <option value="">Use Default</option>
+                            <option value="">Select Type</option>
                             <option value="physics">Physical</option>
                             <option value="computer base">Computer Base</option>
                           </select>
                         </div>
                       )}
-                      <div>
+                      <div className="form-group">
                         <label>Day:</label>
                         <select
                           value={newModule.day}
@@ -537,7 +567,7 @@ const AllTimetable = () => {
                           ))}
                         </select>
                       </div>
-                      <div>
+                      <div className="form-group">
                         <label>Start Time:</label>
                         <input
                           type="time"
@@ -550,7 +580,7 @@ const AllTimetable = () => {
                           }
                         />
                       </div>
-                      <div>
+                      <div className="form-group">
                         <label>End Time:</label>
                         <input
                           type="time"
@@ -563,18 +593,27 @@ const AllTimetable = () => {
                           }
                         />
                       </div>
-                      <button onClick={addNewModule}>Add Module</button>
                     </div>
+                    <button onClick={addNewModule} className="add-btn">
+                      Add Module
+                    </button>
                   </div>
 
                   <div className="edit-actions">
-                    <button onClick={saveChanges}>Save Changes</button>
-                    <button onClick={() => setEditingId(null)}>Cancel</button>
+                    <button onClick={saveChanges} className="save-btn">
+                      Save Changes
+                    </button>
+                    <button
+                      onClick={() => setEditingId(null)}
+                      className="cancel-btn"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </>
               ) : (
                 <>
-                  <table border="1" className="view-table">
+                  <table className="view-table">
                     <thead>
                       <tr>
                         <th>Day</th>
@@ -600,9 +639,7 @@ const AllTimetable = () => {
                           <td>{module.endTime}</td>
                           <td>{module.instructor}</td>
                           {timetable.timetableType !== "All Semester" && (
-                            <td>
-                              {module.examType || timetable.examType || "N/A"}
-                            </td>
+                            <td>{module.examType || "N/A"}</td>
                           )}
                         </tr>
                       ))}
@@ -610,11 +647,22 @@ const AllTimetable = () => {
                   </table>
 
                   <div className="timetable-actions">
-                    <button onClick={() => generatePDF(timetable)}>
+                    <button
+                      onClick={() => generatePDF(timetable)}
+                      className="pdf-btn"
+                    >
                       Download PDF
                     </button>
-                    <button onClick={() => handleEdit(timetable)}>Edit</button>
-                    <button onClick={() => handleDelete(timetable._id)}>
+                    <button
+                      onClick={() => handleEdit(timetable)}
+                      className="edit-btn"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(timetable._id)}
+                      className="delete-btn"
+                    >
                       Delete
                     </button>
                   </div>

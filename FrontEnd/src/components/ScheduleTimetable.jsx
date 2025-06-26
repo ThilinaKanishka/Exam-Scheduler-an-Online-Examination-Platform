@@ -5,9 +5,8 @@ const ScheduleTimetable = () => {
   const [formData, setFormData] = useState({
     timetableType: "All Semester",
     faculty: "computing",
-    semester: "Y1S1",
+    semester: "Y1S1", // Default semester
     weekType: "WD",
-    examType: "",
     modules: [
       {
         moduleName: "",
@@ -61,16 +60,34 @@ const ScheduleTimetable = () => {
     setSuccess("");
 
     try {
-      // Prepare data for submission
+      // Validate exam types for exam timetables
+      if (formData.timetableType !== "All Semester") {
+        const modulesWithoutExamType = formData.modules.filter(
+          (module) => !module.examType
+        );
+        if (modulesWithoutExamType.length > 0) {
+          throw new Error(
+            "Exam type is required for all modules in exam timetables"
+          );
+        }
+      }
+
       const submissionData = {
-        ...formData,
+        timetableType: formData.timetableType,
+        faculty: formData.faculty,
+        semester: formData.semester, // Always include semester
+        weekType:
+          formData.timetableType === "All Semester"
+            ? formData.weekType
+            : undefined,
         modules: formData.modules.map((module) => ({
-          ...module,
-          // For exam timetables, use module-specific examType if available, otherwise fall back to form-level examType
-          examType:
-            formData.timetableType !== "All Semester"
-              ? module.examType || formData.examType
-              : undefined,
+          moduleName: module.moduleName,
+          moduleCode: module.moduleCode,
+          instructor: module.instructor,
+          venue: module.venue,
+          ...(formData.timetableType !== "All Semester" && {
+            examType: module.examType,
+          }),
         })),
       };
 
@@ -84,7 +101,6 @@ const ScheduleTimetable = () => {
         faculty: "computing",
         semester: "Y1S1",
         weekType: "WD",
-        examType: "",
         modules: [
           {
             moduleName: "",
@@ -96,23 +112,28 @@ const ScheduleTimetable = () => {
         ],
       });
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to generate timetable");
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to generate timetable"
+      );
     }
   };
 
   return (
-    <div>
+    <div className="schedule-timetable-container">
       <h2>Generate New Timetable</h2>
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      {success && <div style={{ color: "green" }}>{success}</div>}
+      {error && <div className="error-message">{error}</div>}
+      {success && <div className="success-message">{success}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <div>
+      <form onSubmit={handleSubmit} className="timetable-form">
+        <div className="form-group">
           <label>Timetable Type:</label>
           <select
             name="timetableType"
             value={formData.timetableType}
             onChange={handleChange}
+            required
           >
             <option value="All Semester">All Semester</option>
             <option value="MID Exam">MID Exam</option>
@@ -122,12 +143,13 @@ const ScheduleTimetable = () => {
           </select>
         </div>
 
-        <div>
+        <div className="form-group">
           <label>Faculty:</label>
           <select
             name="faculty"
             value={formData.faculty}
             onChange={handleChange}
+            required
           >
             <option value="computing">Computing</option>
             <option value="engineering">Engineering</option>
@@ -136,64 +158,52 @@ const ScheduleTimetable = () => {
           </select>
         </div>
 
-        {formData.timetableType === "All Semester" && (
-          <>
-            <div>
-              <label>Semester:</label>
-              <select
-                name="semester"
-                value={formData.semester}
-                onChange={handleChange}
-              >
-                {[
-                  "Y1S1",
-                  "Y1S2",
-                  "Y2S1",
-                  "Y2S2",
-                  "Y3S1",
-                  "Y3S2",
-                  "Y4S1",
-                  "Y4S2",
-                ].map((sem) => (
-                  <option key={sem} value={sem}>
-                    {sem}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label>Week Type:</label>
-              <select
-                name="weekType"
-                value={formData.weekType}
-                onChange={handleChange}
-              >
-                <option value="WD">Weekday (WD)</option>
-                <option value="WE">Weekend (WE)</option>
-              </select>
-            </div>
-          </>
-        )}
+        {/* Always show Semester selection */}
+        <div className="form-group">
+          <label>Semester:</label>
+          <select
+            name="semester"
+            value={formData.semester}
+            onChange={handleChange}
+            required
+          >
+            {[
+              "Y1S1",
+              "Y1S2",
+              "Y2S1",
+              "Y2S2",
+              "Y3S1",
+              "Y3S2",
+              "Y4S1",
+              "Y4S2",
+            ].map((sem) => (
+              <option key={sem} value={sem}>
+                {sem}
+              </option>
+            ))}
+          </select>
+        </div>
 
-        {formData.timetableType !== "All Semester" && (
-          <div>
-            <label>Default Exam Type:</label>
+        {/* Only show Week Type for All Semester */}
+        {formData.timetableType === "All Semester" && (
+          <div className="form-group">
+            <label>Week Type:</label>
             <select
-              name="examType"
-              value={formData.examType}
+              name="weekType"
+              value={formData.weekType}
               onChange={handleChange}
+              required
             >
-              <option value="">Select Default Exam Type</option>
-              <option value="physics">Physical</option>
-              <option value="computer base">Computer Base</option>
+              <option value="WD">Weekday (WD)</option>
+              <option value="WE">Weekend (WE)</option>
             </select>
           </div>
         )}
 
         <h3>Modules (Minimum 4 required)</h3>
         {formData.modules.map((module, index) => (
-          <div key={index}>
-            <div>
+          <div key={index} className="module-card">
+            <div className="form-group">
               <label>Module Name:</label>
               <input
                 type="text"
@@ -203,7 +213,7 @@ const ScheduleTimetable = () => {
                 required
               />
             </div>
-            <div>
+            <div className="form-group">
               <label>Module Code:</label>
               <input
                 type="text"
@@ -213,7 +223,7 @@ const ScheduleTimetable = () => {
                 required
               />
             </div>
-            <div>
+            <div className="form-group">
               <label>Instructor:</label>
               <input
                 type="text"
@@ -223,7 +233,7 @@ const ScheduleTimetable = () => {
                 required
               />
             </div>
-            <div>
+            <div className="form-group">
               <label>Venue:</label>
               <input
                 type="text"
@@ -234,33 +244,41 @@ const ScheduleTimetable = () => {
               />
             </div>
             {formData.timetableType !== "All Semester" && (
-              <div>
-                <label>Exam Type for this Module:</label>
+              <div className="form-group">
+                <label>Exam Type:</label>
                 <select
                   name="examType"
                   value={module.examType}
                   onChange={(e) => handleModuleChange(index, e)}
+                  required={formData.timetableType !== "All Semester"}
                 >
-                  <option value="">Use Default</option>
+                  <option value="">Select Exam Type</option>
                   <option value="physics">Physical</option>
                   <option value="computer base">Computer Base</option>
                 </select>
               </div>
             )}
             {formData.modules.length > 1 && (
-              <button type="button" onClick={() => removeModule(index)}>
+              <button
+                type="button"
+                onClick={() => removeModule(index)}
+                className="remove-btn"
+              >
                 Remove Module
               </button>
             )}
-            <hr />
           </div>
         ))}
 
-        <button type="button" onClick={addModule}>
+        <button type="button" onClick={addModule} className="add-btn">
           Add Module
         </button>
 
-        <button type="submit" disabled={formData.modules.length < 4}>
+        <button
+          type="submit"
+          disabled={formData.modules.length < 4}
+          className="submit-btn"
+        >
           Generate Timetable
         </button>
       </form>

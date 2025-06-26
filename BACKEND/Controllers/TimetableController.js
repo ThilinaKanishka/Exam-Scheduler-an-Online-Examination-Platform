@@ -1,14 +1,11 @@
-// timetableController.js
-
 const Timetable = require("../Model/TimetableModel");
 const { generateTimeSlots, getRandomDays } = require("./timetableUtils");
 
-// Generate timetable
 exports.generateTimetable = async (req, res) => {
   try {
-    const { timetableType, faculty, semester, weekType, examType, modules } =
-      req.body;
+    const { timetableType, faculty, semester, weekType, modules } = req.body;
 
+    // Basic validation
     if (!timetableType || !faculty) {
       return res
         .status(400)
@@ -17,46 +14,52 @@ exports.generateTimetable = async (req, res) => {
 
     if (timetableType === "All Semester" && (!semester || !weekType)) {
       return res.status(400).json({
-        error: "Semester and week type are required for All Semester timetable",
+        error: "Semester and week type are required for semester timetables",
       });
-    }
-
-    if (timetableType !== "All Semester" && !examType) {
-      return res
-        .status(400)
-        .json({ error: "Exam type is required for exam timetables" });
     }
 
     if (!modules || modules.length < 4) {
       return res.status(400).json({ error: "At least 4 modules are required" });
     }
 
+    // Clean and validate modules
+    const cleanedModules = modules.map((module) => {
+      const cleaned = {
+        moduleName: module.moduleName,
+        moduleCode: module.moduleCode,
+        instructor: module.instructor,
+        venue: module.venue,
+      };
+
+      // Only include examType for exam timetables
+      if (timetableType !== "All Semester") {
+        if (!module.examType) {
+          throw new Error(
+            "Exam type is required for all modules in exam timetables"
+          );
+        }
+        cleaned.examType = module.examType;
+      }
+
+      return cleaned;
+    });
+
     // Process modules based on timetable type
     let processedModules = [];
 
     if (timetableType === "All Semester") {
-      if (weekType === "WD") {
-        // Weekday timetable - spread across 5 days
-        const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+      const days =
+        weekType === "WD"
+          ? ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+          : ["Saturday", "Sunday"];
 
-        modules.forEach((module) => {
-          // Assign 1-2 random days per module
-          const moduleDays = getRandomDays(days, 1, 2);
+      cleanedModules.forEach((module) => {
+        const daysToAssign =
+          weekType === "WD"
+            ? getRandomDays(days, 1, 2)
+            : [days[Math.floor(Math.random() * days.length)]];
 
-          moduleDays.forEach((day) => {
-            const { startTime, endTime } = generateTimeSlots();
-            processedModules.push({
-              ...module,
-              day,
-              startTime,
-              endTime,
-            });
-          });
-        });
-      } else {
-        // Weekend timetable - only Saturday and Sunday
-        modules.forEach((module) => {
-          const day = Math.random() > 0.5 ? "Saturday" : "Sunday";
+        daysToAssign.forEach((day) => {
           const { startTime, endTime } = generateTimeSlots();
           processedModules.push({
             ...module,
@@ -65,9 +68,9 @@ exports.generateTimetable = async (req, res) => {
             endTime,
           });
         });
-      }
+      });
     } else {
-      // Exam timetable - spread across 7 days, one module per day
+      // Exam timetable - spread across 7 days
       const days = [
         "Monday",
         "Tuesday",
@@ -79,7 +82,7 @@ exports.generateTimetable = async (req, res) => {
       ];
       const shuffledDays = [...days].sort(() => 0.5 - Math.random());
 
-      modules.slice(0, 7).forEach((module, index) => {
+      cleanedModules.slice(0, 7).forEach((module, index) => {
         const day = shuffledDays[index % shuffledDays.length];
         const { startTime, endTime } = generateTimeSlots();
         processedModules.push({
@@ -91,25 +94,24 @@ exports.generateTimetable = async (req, res) => {
       });
     }
 
-    // Create new timetable
+    // Create and save timetable
     const timetable = new Timetable({
       timetableType,
       faculty,
       semester: timetableType === "All Semester" ? semester : undefined,
       weekType: timetableType === "All Semester" ? weekType : undefined,
-      examType: timetableType !== "All Semester" ? examType : undefined,
       modules: processedModules,
     });
 
     await timetable.save();
     res.status(201).json(timetable);
   } catch (error) {
-    console.error("Error generating timetable:", error);
+    console.error("Timetable generation error:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
-// Get all timetables
+// Other controller methods remain unchanged...
 exports.getAllTimetables = async (req, res) => {
   try {
     const timetables = await Timetable.find().sort({ generatedAt: -1 });
@@ -119,7 +121,6 @@ exports.getAllTimetables = async (req, res) => {
   }
 };
 
-// Get timetable by ID
 exports.getTimetableById = async (req, res) => {
   try {
     const timetable = await Timetable.findById(req.params.id);
@@ -132,7 +133,6 @@ exports.getTimetableById = async (req, res) => {
   }
 };
 
-// Update timetable
 exports.updateTimetable = async (req, res) => {
   try {
     const { modules } = req.body;
@@ -142,7 +142,6 @@ exports.updateTimetable = async (req, res) => {
       return res.status(404).json({ error: "Timetable not found" });
     }
 
-    // Update modules
     if (modules) {
       timetable.modules = modules;
     }
@@ -154,7 +153,6 @@ exports.updateTimetable = async (req, res) => {
   }
 };
 
-// Delete timetable
 exports.deleteTimetable = async (req, res) => {
   try {
     const timetable = await Timetable.findByIdAndDelete(req.params.id);
@@ -167,7 +165,6 @@ exports.deleteTimetable = async (req, res) => {
   }
 };
 
-// Get timetables by faculty and type
 exports.getTimetablesByFacultyAndType = async (req, res) => {
   try {
     const { faculty, timetableType } = req.params;

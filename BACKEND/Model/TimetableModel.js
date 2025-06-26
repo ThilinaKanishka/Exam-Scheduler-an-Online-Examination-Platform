@@ -31,13 +31,6 @@ const timetableSchema = new mongoose.Schema({
     },
     enum: ["WD", "WE"],
   },
-  examType: {
-    type: String,
-    required: function () {
-      return this.timetableType !== "All Semester";
-    },
-    enum: ["physics", "computer base", null],
-  },
   modules: [
     {
       moduleName: { type: String, required: true },
@@ -47,6 +40,13 @@ const timetableSchema = new mongoose.Schema({
       day: { type: String, required: true },
       startTime: { type: String, required: true },
       endTime: { type: String, required: true },
+      examType: {
+        type: String,
+        enum: ["physics", "computer base"],
+        required: function () {
+          return this.parent().timetableType !== "All Semester";
+        },
+      },
     },
   ],
   generatedAt: {
@@ -55,11 +55,23 @@ const timetableSchema = new mongoose.Schema({
   },
 });
 
-// Prevent double booking for same venue and time
 timetableSchema.pre("save", function (next) {
   const timetable = this;
 
-  // Check for overlapping schedules in the same timetable
+  // Validate exam types for exam timetables
+  if (timetable.timetableType !== "All Semester") {
+    for (const module of timetable.modules) {
+      if (!module.examType) {
+        return next(
+          new Error(
+            `Exam type is required for all modules in ${timetable.timetableType} timetables`
+          )
+        );
+      }
+    }
+  }
+
+  // Check for overlapping schedules
   for (let i = 0; i < timetable.modules.length; i++) {
     for (let j = i + 1; j < timetable.modules.length; j++) {
       const mod1 = timetable.modules[i];
@@ -68,9 +80,7 @@ timetableSchema.pre("save", function (next) {
       if (mod1.venue === mod2.venue && mod1.day === mod2.day) {
         if (mod1.startTime < mod2.endTime && mod1.endTime > mod2.startTime) {
           return next(
-            new Error(
-              `Double booking detected for venue ${mod1.venue} on ${mod1.day}`
-            )
+            new Error(`Double booking at ${mod1.venue} on ${mod1.day}`)
           );
         }
       }
