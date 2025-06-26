@@ -15,6 +15,7 @@ const AllTimetable = () => {
     day: "Monday",
     startTime: "08:00",
     endTime: "09:00",
+    examType: "",
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -75,6 +76,7 @@ const AllTimetable = () => {
       day: "Monday",
       startTime: "08:00",
       endTime: "09:00",
+      examType: "",
     });
     setError("");
   };
@@ -164,6 +166,9 @@ const AllTimetable = () => {
       if (timetable.weekType) {
         doc.text(`Week Type: ${timetable.weekType}`, 15, 59);
       }
+      if (timetable.examType) {
+        doc.text(`Exam Type: ${timetable.examType}`, 15, 66);
+      }
 
       doc.text(
         `Academic Year: 2023/2024`,
@@ -183,7 +188,7 @@ const AllTimetable = () => {
       );
 
       doc.setDrawColor(200, 200, 200);
-      doc.line(15, 65, doc.internal.pageSize.getWidth() - 15, 65);
+      doc.line(15, 75, doc.internal.pageSize.getWidth() - 15, 75);
 
       // Table data preparation
       const headers = [
@@ -195,6 +200,7 @@ const AllTimetable = () => {
           "Start Time",
           "End Time",
           "Instructor",
+          ...(timetable.timetableType !== "All Semester" ? ["Exam Type"] : []),
         ],
       ];
 
@@ -206,12 +212,15 @@ const AllTimetable = () => {
         module.startTime,
         module.endTime,
         module.instructor,
+        ...(timetable.timetableType !== "All Semester"
+          ? [module.examType || timetable.examType || "N/A"]
+          : []),
       ]);
 
       autoTable(doc, {
         head: headers,
         body: data,
-        startY: 70,
+        startY: 80,
         margin: { left: 5, right: 5 },
         tableWidth: "auto",
         headStyles: {
@@ -236,6 +245,9 @@ const AllTimetable = () => {
           4: { cellWidth: 20, halign: "center" },
           5: { cellWidth: 20, halign: "center" },
           6: { cellWidth: "auto" },
+          ...(timetable.timetableType !== "All Semester"
+            ? { 7: { cellWidth: 25, halign: "center" } }
+            : {}),
         },
         didDrawPage: (data) => {
           doc.setFontSize(8);
@@ -260,6 +272,7 @@ const AllTimetable = () => {
       setTimeout(() => setError(""), 3000);
     }
   };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -278,6 +291,7 @@ const AllTimetable = () => {
                 {timetable.timetableType} - {timetable.faculty}
                 {timetable.semester && ` - ${timetable.semester}`}
                 {timetable.weekType && ` - ${timetable.weekType}`}
+                {timetable.examType && ` - ${timetable.examType}`}
               </h3>
 
               {editingId === timetable._id ? (
@@ -292,6 +306,9 @@ const AllTimetable = () => {
                         <th>Start Time</th>
                         <th>End Time</th>
                         <th>Instructor</th>
+                        {timetable.timetableType !== "All Semester" && (
+                          <th>Exam Type</th>
+                        )}
                         <th>Action</th>
                       </tr>
                     </thead>
@@ -394,6 +411,26 @@ const AllTimetable = () => {
                               }
                             />
                           </td>
+                          {timetable.timetableType !== "All Semester" && (
+                            <td>
+                              <select
+                                value={module.examType || ""}
+                                onChange={(e) =>
+                                  handleModuleChange(
+                                    idx,
+                                    "examType",
+                                    e.target.value
+                                  )
+                                }
+                              >
+                                <option value="">Use Default</option>
+                                <option value="physics">Physical</option>
+                                <option value="computer base">
+                                  Computer Base
+                                </option>
+                              </select>
+                            </td>
+                          )}
                           <td>
                             <button onClick={() => removeModule(idx)}>
                               Remove
@@ -459,6 +496,24 @@ const AllTimetable = () => {
                           }
                         />
                       </div>
+                      {timetable.timetableType !== "All Semester" && (
+                        <div>
+                          <label>Exam Type:</label>
+                          <select
+                            value={newModule.examType}
+                            onChange={(e) =>
+                              setNewModule({
+                                ...newModule,
+                                examType: e.target.value,
+                              })
+                            }
+                          >
+                            <option value="">Use Default</option>
+                            <option value="physics">Physical</option>
+                            <option value="computer base">Computer Base</option>
+                          </select>
+                        </div>
+                      )}
                       <div>
                         <label>Day:</label>
                         <select
@@ -529,6 +584,9 @@ const AllTimetable = () => {
                         <th>Start Time</th>
                         <th>End Time</th>
                         <th>Instructor</th>
+                        {timetable.timetableType !== "All Semester" && (
+                          <th>Exam Type</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
@@ -541,6 +599,11 @@ const AllTimetable = () => {
                           <td>{module.startTime}</td>
                           <td>{module.endTime}</td>
                           <td>{module.instructor}</td>
+                          {timetable.timetableType !== "All Semester" && (
+                            <td>
+                              {module.examType || timetable.examType || "N/A"}
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>

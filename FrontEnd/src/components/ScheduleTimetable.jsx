@@ -8,7 +8,15 @@ const ScheduleTimetable = () => {
     semester: "Y1S1",
     weekType: "WD",
     examType: "",
-    modules: [{ moduleName: "", moduleCode: "", instructor: "", venue: "" }],
+    modules: [
+      {
+        moduleName: "",
+        moduleCode: "",
+        instructor: "",
+        venue: "",
+        examType: "",
+      },
+    ],
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -30,7 +38,13 @@ const ScheduleTimetable = () => {
       ...formData,
       modules: [
         ...formData.modules,
-        { moduleName: "", moduleCode: "", instructor: "", venue: "" },
+        {
+          moduleName: "",
+          moduleCode: "",
+          instructor: "",
+          venue: "",
+          examType: "",
+        },
       ],
     });
   };
@@ -47,9 +61,22 @@ const ScheduleTimetable = () => {
     setSuccess("");
 
     try {
+      // Prepare data for submission
+      const submissionData = {
+        ...formData,
+        modules: formData.modules.map((module) => ({
+          ...module,
+          // For exam timetables, use module-specific examType if available, otherwise fall back to form-level examType
+          examType:
+            formData.timetableType !== "All Semester"
+              ? module.examType || formData.examType
+              : undefined,
+        })),
+      };
+
       const response = await axios.post(
         "http://localhost:5000/api/timetables/generate",
-        formData
+        submissionData
       );
       setSuccess("Timetable generated successfully!");
       setFormData({
@@ -59,7 +86,13 @@ const ScheduleTimetable = () => {
         weekType: "WD",
         examType: "",
         modules: [
-          { moduleName: "", moduleCode: "", instructor: "", venue: "" },
+          {
+            moduleName: "",
+            moduleCode: "",
+            instructor: "",
+            venue: "",
+            examType: "",
+          },
         ],
       });
     } catch (err) {
@@ -144,14 +177,14 @@ const ScheduleTimetable = () => {
 
         {formData.timetableType !== "All Semester" && (
           <div>
-            <label>Exam Type:</label>
+            <label>Default Exam Type:</label>
             <select
               name="examType"
               value={formData.examType}
               onChange={handleChange}
             >
-              <option value="">Select Exam Type</option>
-              <option value="physics">Physics</option>
+              <option value="">Select Default Exam Type</option>
+              <option value="physics">Physical</option>
               <option value="computer base">Computer Base</option>
             </select>
           </div>
@@ -200,6 +233,20 @@ const ScheduleTimetable = () => {
                 required
               />
             </div>
+            {formData.timetableType !== "All Semester" && (
+              <div>
+                <label>Exam Type for this Module:</label>
+                <select
+                  name="examType"
+                  value={module.examType}
+                  onChange={(e) => handleModuleChange(index, e)}
+                >
+                  <option value="">Use Default</option>
+                  <option value="physics">Physical</option>
+                  <option value="computer base">Computer Base</option>
+                </select>
+              </div>
+            )}
             {formData.modules.length > 1 && (
               <button type="button" onClick={() => removeModule(index)}>
                 Remove Module

@@ -78,6 +78,9 @@ const StudentTimetable = () => {
       if (timetable.weekType) {
         doc.text(`Week Type: ${timetable.weekType}`, 15, 59);
       }
+      if (timetable.examType) {
+        doc.text(`Exam Type: ${timetable.examType}`, 15, 66);
+      }
 
       doc.text(
         `Academic Year: 2023/2024`,
@@ -97,7 +100,7 @@ const StudentTimetable = () => {
       );
 
       doc.setDrawColor(200, 200, 200);
-      doc.line(15, 65, doc.internal.pageSize.getWidth() - 15, 65);
+      doc.line(15, 75, doc.internal.pageSize.getWidth() - 15, 75);
 
       // Table data preparation
       const headers = [
@@ -109,6 +112,7 @@ const StudentTimetable = () => {
           "Start Time",
           "End Time",
           "Instructor",
+          ...(timetable.timetableType !== "All Semester" ? ["Exam Type"] : []),
         ],
       ];
 
@@ -120,12 +124,15 @@ const StudentTimetable = () => {
         module.startTime,
         module.endTime,
         module.instructor,
+        ...(timetable.timetableType !== "All Semester"
+          ? [module.examType || timetable.examType || "N/A"]
+          : []),
       ]);
 
       autoTable(doc, {
         head: headers,
         body: data,
-        startY: 70,
+        startY: 80,
         margin: { left: 5, right: 5 },
         tableWidth: "auto",
         headStyles: {
@@ -150,6 +157,9 @@ const StudentTimetable = () => {
           4: { cellWidth: 20, halign: "center" },
           5: { cellWidth: 20, halign: "center" },
           6: { cellWidth: "auto" },
+          ...(timetable.timetableType !== "All Semester"
+            ? { 7: { cellWidth: 25, halign: "center" } }
+            : {}),
         },
         didDrawPage: (data) => {
           doc.setFontSize(8);
@@ -234,6 +244,7 @@ const StudentTimetable = () => {
                 {timetable.timetableType} - {timetable.faculty}
                 {timetable.semester && ` - ${timetable.semester}`}
                 {timetable.weekType && ` - ${timetable.weekType}`}
+                {timetable.examType && ` - ${timetable.examType}`}
               </h3>
 
               <table border="1" style={{ width: "100%" }}>
@@ -246,6 +257,9 @@ const StudentTimetable = () => {
                     <th>Day</th>
                     <th>Start Time</th>
                     <th>End Time</th>
+                    {timetable.timetableType !== "All Semester" && (
+                      <th>Exam Type</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -258,6 +272,11 @@ const StudentTimetable = () => {
                       <td>{module.day}</td>
                       <td>{module.startTime}</td>
                       <td>{module.endTime}</td>
+                      {timetable.timetableType !== "All Semester" && (
+                        <td>
+                          {module.examType || timetable.examType || "N/A"}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
