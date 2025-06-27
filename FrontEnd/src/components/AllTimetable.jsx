@@ -301,6 +301,7 @@ const AllTimetable = () => {
       setTimeout(() => setError(""), 3000);
     }
   };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
