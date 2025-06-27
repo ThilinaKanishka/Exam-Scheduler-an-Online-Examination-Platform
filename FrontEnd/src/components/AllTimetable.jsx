@@ -178,21 +178,23 @@ const AllTimetable = () => {
         align: "center",
       });
 
+      // Main title with semester if available
+      let title = `${timetable.timetableType.toUpperCase()} TIMETABLE`;
+      if (timetable.semester) {
+        title += ` - ${timetable.semester}`;
+      }
+
       doc.setTextColor(30, 58, 138);
       doc.setFontSize(16);
-      doc.text(
-        `${timetable.timetableType.toUpperCase()} TIMETABLE - ${
-          timetable.semester || ""
-        }`,
-        doc.internal.pageSize.getWidth() / 2,
-        35,
-        { align: "center" }
-      );
+      doc.text(title, doc.internal.pageSize.getWidth() / 2, 35, {
+        align: "center",
+      });
 
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
 
+      // Information section
       doc.text(`Faculty: ${timetable.faculty || "N/A"}`, 15, 45);
       if (timetable.semester) {
         doc.text(`Semester: ${timetable.semester}`, 15, 52);
@@ -219,15 +221,15 @@ const AllTimetable = () => {
       doc.setDrawColor(200, 200, 200);
       doc.line(15, 70, doc.internal.pageSize.getWidth() - 15, 70);
 
-      // Table data preparation
+      // Table data preparation with correct header order
       const headers = [
         [
           "Day",
-          "Module Name",
           "Module Code",
-          "Venue",
+          "Module Name",
           "Start Time",
           "End Time",
+          "Venue",
           "Instructor",
           ...(timetable.timetableType !== "All Semester" ? ["Exam Type"] : []),
         ],
@@ -235,11 +237,11 @@ const AllTimetable = () => {
 
       const data = timetable.modules.map((module) => [
         module.day,
-        module.moduleName,
         module.moduleCode,
-        module.venue,
+        module.moduleName,
         module.startTime,
         module.endTime,
+        module.venue,
         module.instructor,
         ...(timetable.timetableType !== "All Semester"
           ? [module.examType || "N/A"]
@@ -267,15 +269,15 @@ const AllTimetable = () => {
           fillColor: [240, 240, 240],
         },
         columnStyles: {
-          0: { cellWidth: 20, halign: "center" },
-          1: { cellWidth: "auto" },
-          2: { cellWidth: 25, halign: "center" },
-          3: { cellWidth: 25, halign: "center" },
-          4: { cellWidth: 20, halign: "center" },
-          5: { cellWidth: 20, halign: "center" },
-          6: { cellWidth: "auto" },
+          0: { cellWidth: 20, halign: "center" }, // Day
+          1: { cellWidth: 25, halign: "center" }, // Module Code
+          2: { cellWidth: "auto" }, // Module Name
+          3: { cellWidth: 20, halign: "center" }, // Start Time
+          4: { cellWidth: 20, halign: "center" }, // End Time
+          5: { cellWidth: 25, halign: "center" }, // Venue
+          6: { cellWidth: "auto" }, // Instructor
           ...(timetable.timetableType !== "All Semester"
-            ? { 7: { cellWidth: 25, halign: "center" } }
+            ? { 7: { cellWidth: 30, halign: "center" } } // Exam Type
             : {}),
         },
         didDrawPage: (data) => {
@@ -301,7 +303,6 @@ const AllTimetable = () => {
       setTimeout(() => setError(""), 3000);
     }
   };
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;
 

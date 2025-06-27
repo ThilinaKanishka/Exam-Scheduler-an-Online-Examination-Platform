@@ -146,7 +146,7 @@ const StudentTimetable = () => {
           5: { cellWidth: 20, halign: "center" },
           6: { cellWidth: "auto" },
           ...(timetable.timetableType !== "All Semester"
-            ? { 7: { cellWidth: 25, halign: "center" } }
+            ? { 7: { cellWidth: 30, halign: "center" } }
             : {}),
         },
         didDrawPage: (data) => {
