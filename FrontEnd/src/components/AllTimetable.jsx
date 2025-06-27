@@ -2,6 +2,20 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import {
+  FiEdit,
+  FiTrash2,
+  FiDownload,
+  FiSave,
+  FiX,
+  FiPlus,
+  FiCalendar,
+  FiBook,
+  FiUser,
+  FiHome,
+  FiClock,
+  FiChevronDown,
+} from "react-icons/fi";
 import AdminHeader from "./AdminPanelHeader";
 import AdminFooter from "./AdminPanelFooter";
 
@@ -66,7 +80,6 @@ const AllTimetable = () => {
       return;
     }
 
-    // Create module without examType by default
     const moduleToAdd = {
       moduleName: newModule.moduleName,
       moduleCode: newModule.moduleCode,
@@ -77,7 +90,6 @@ const AllTimetable = () => {
       endTime: newModule.endTime,
     };
 
-    // Only add examType if it's an exam timetable and value is provided
     if (
       editedTimetable.timetableType !== "All Semester" &&
       newModule.examType
@@ -112,7 +124,6 @@ const AllTimetable = () => {
 
   const saveChanges = async () => {
     try {
-      // Validate exam types for exam timetables
       if (editedTimetable.timetableType !== "All Semester") {
         const modulesWithoutExamType = editedTimetable.modules.filter(
           (module) => !module.examType
@@ -164,15 +175,9 @@ const AllTimetable = () => {
 
   const generatePDF = (timetable) => {
     try {
-      const doc = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-      });
-
-      // Header with gradient background
+      const doc = new jsPDF({ orientation: "landscape", unit: "mm" });
       doc.setFillColor(30, 58, 138);
       doc.rect(0, 0, doc.internal.pageSize.getWidth(), 25, "F");
-
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
@@ -180,11 +185,8 @@ const AllTimetable = () => {
         align: "center",
       });
 
-      // Main title with semester if available
       let title = `${timetable.timetableType.toUpperCase()} TIMETABLE`;
-      if (timetable.semester) {
-        title += ` - ${timetable.semester}`;
-      }
+      if (timetable.semester) title += ` - ${timetable.semester}`;
 
       doc.setTextColor(30, 58, 138);
       doc.setFontSize(16);
@@ -195,15 +197,11 @@ const AllTimetable = () => {
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
-
-      // Information section
       doc.text(`Faculty: ${timetable.faculty || "N/A"}`, 15, 45);
-      if (timetable.semester) {
+      if (timetable.semester)
         doc.text(`Semester: ${timetable.semester}`, 15, 52);
-      }
-      if (timetable.weekType) {
+      if (timetable.weekType)
         doc.text(`Week Type: ${timetable.weekType}`, 15, 59);
-      }
 
       doc.text(
         `Academic Year: ${new Date().getFullYear()}/${
@@ -223,7 +221,6 @@ const AllTimetable = () => {
       doc.setDrawColor(200, 200, 200);
       doc.line(15, 70, doc.internal.pageSize.getWidth() - 15, 70);
 
-      // Table data preparation with correct header order
       const headers = [
         [
           "Day",
@@ -263,23 +260,18 @@ const AllTimetable = () => {
           fontSize: 10,
           cellPadding: 4,
         },
-        bodyStyles: {
-          fontSize: 9,
-          cellPadding: 3,
-        },
-        alternateRowStyles: {
-          fillColor: [240, 240, 240],
-        },
+        bodyStyles: { fontSize: 9, cellPadding: 3 },
+        alternateRowStyles: { fillColor: [240, 240, 240] },
         columnStyles: {
-          0: { cellWidth: 20, halign: "center" }, // Day
-          1: { cellWidth: 25, halign: "center" }, // Module Code
-          2: { cellWidth: "auto" }, // Module Name
-          3: { cellWidth: 20, halign: "center" }, // Start Time
-          4: { cellWidth: 20, halign: "center" }, // End Time
-          5: { cellWidth: 25, halign: "center" }, // Venue
-          6: { cellWidth: "auto" }, // Instructor
+          0: { cellWidth: 20, halign: "center" },
+          1: { cellWidth: 25, halign: "center" },
+          2: { cellWidth: "auto" },
+          3: { cellWidth: 20, halign: "center" },
+          4: { cellWidth: 20, halign: "center" },
+          5: { cellWidth: 25, halign: "center" },
+          6: { cellWidth: "auto" },
           ...(timetable.timetableType !== "All Semester"
-            ? { 7: { cellWidth: 30, halign: "center" } } // Exam Type
+            ? { 7: { cellWidth: 30, halign: "center" } }
             : {}),
         },
         didDrawPage: (data) => {
@@ -305,379 +297,580 @@ const AllTimetable = () => {
       setTimeout(() => setError(""), 3000);
     }
   };
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div className="error-message">{error}</div>;
+
+  if (loading)
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
 
   return (
-    <div className="timetable-admin-container">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100">
       <AdminHeader />
-      <h2>All Generated Timetables</h2>
-      {success && <div className="success-message">{success}</div>}
 
-      {timetables.length === 0 ? (
-        <div>No timetables found</div>
-      ) : (
-        <div className="timetable-list">
-          {timetables.map((timetable) => (
-            <div key={timetable._id} className="timetable-card">
-              <h3>
-                {timetable.timetableType} - {timetable.faculty}
-                {timetable.semester && ` - ${timetable.semester}`}
-                {timetable.weekType && ` - ${timetable.weekType}`}
-              </h3>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8 animate-fade-in">
+          <div className="bg-gradient-to-r from-indigo-600 to-blue-500 p-6">
+            <h2 className="text-3xl font-bold text-white flex items-center">
+              <FiCalendar className="mr-3" />
+              All Generated Timetables
+            </h2>
+          </div>
 
-              {editingId === timetable._id ? (
-                <>
-                  <table className="edit-table">
-                    <thead>
-                      <tr>
-                        <th>Day</th>
-                        <th>Module Name</th>
-                        <th>Module Code</th>
-                        <th>Venue</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Instructor</th>
-                        {timetable.timetableType !== "All Semester" && (
-                          <th>Exam Type</th>
-                        )}
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {editedTimetable?.modules?.map((module, idx) => (
-                        <tr key={idx}>
-                          <td>
-                            <select
-                              value={module.day}
-                              onChange={(e) =>
-                                handleModuleChange(idx, "day", e.target.value)
-                              }
-                            >
-                              {[
-                                "Monday",
-                                "Tuesday",
-                                "Wednesday",
-                                "Thursday",
-                                "Friday",
-                                "Saturday",
-                                "Sunday",
-                              ].map((day) => (
-                                <option key={day} value={day}>
-                                  {day}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              value={module.moduleName}
-                              onChange={(e) =>
-                                handleModuleChange(
-                                  idx,
-                                  "moduleName",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              value={module.moduleCode}
-                              onChange={(e) =>
-                                handleModuleChange(
-                                  idx,
-                                  "moduleCode",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              value={module.venue}
-                              onChange={(e) =>
-                                handleModuleChange(idx, "venue", e.target.value)
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="time"
-                              value={module.startTime}
-                              onChange={(e) =>
-                                handleModuleChange(
-                                  idx,
-                                  "startTime",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="time"
-                              value={module.endTime}
-                              onChange={(e) =>
-                                handleModuleChange(
-                                  idx,
-                                  "endTime",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td>
-                            <input
-                              type="text"
-                              value={module.instructor}
-                              onChange={(e) =>
-                                handleModuleChange(
-                                  idx,
-                                  "instructor",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          {timetable.timetableType !== "All Semester" && (
-                            <td>
-                              <select
-                                value={module.examType || ""}
-                                onChange={(e) =>
-                                  handleModuleChange(
-                                    idx,
-                                    "examType",
-                                    e.target.value
-                                  )
-                                }
-                              >
-                                <option value="">Select Type</option>
-                                <option value="physics">Physical</option>
-                                <option value="computer base">
-                                  Computer Base
-                                </option>
-                              </select>
-                            </td>
-                          )}
-                          <td>
-                            <button
-                              onClick={() => removeModule(idx)}
-                              className="remove-btn"
-                            >
-                              Remove
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          <div className="p-6">
+            {error && (
+              <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded animate-shake">
+                <p>{error}</p>
+              </div>
+            )}
 
-                  <div className="add-module-form">
-                    <h4>Add New Module</h4>
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label>Module Name:</label>
-                        <input
-                          type="text"
-                          value={newModule.moduleName}
-                          onChange={(e) =>
-                            setNewModule({
-                              ...newModule,
-                              moduleName: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Module Code:</label>
-                        <input
-                          type="text"
-                          value={newModule.moduleCode}
-                          onChange={(e) =>
-                            setNewModule({
-                              ...newModule,
-                              moduleCode: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Instructor:</label>
-                        <input
-                          type="text"
-                          value={newModule.instructor}
-                          onChange={(e) =>
-                            setNewModule({
-                              ...newModule,
-                              instructor: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Venue:</label>
-                        <input
-                          type="text"
-                          value={newModule.venue}
-                          onChange={(e) =>
-                            setNewModule({
-                              ...newModule,
-                              venue: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      {timetable.timetableType !== "All Semester" && (
-                        <div className="form-group">
-                          <label>Exam Type:</label>
-                          <select
-                            value={newModule.examType}
-                            onChange={(e) =>
-                              setNewModule({
-                                ...newModule,
-                                examType: e.target.value,
-                              })
-                            }
+            {success && (
+              <div className="mb-6 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded animate-fade-in">
+                <p>{success}</p>
+              </div>
+            )}
+
+            {timetables.length === 0 ? (
+              <div className="text-center py-12 text-gray-600">
+                No timetables found. Create one to get started.
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {timetables.map((timetable) => (
+                  <div
+                    key={timetable._id}
+                    className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden"
+                  >
+                    <div className="bg-indigo-100 px-6 py-3 border-b border-gray-200 flex justify-between items-center">
+                      <h3 className="text-lg font-semibold text-indigo-800">
+                        {timetable.timetableType} - {timetable.faculty}
+                        {timetable.semester && ` - ${timetable.semester}`}
+                        {timetable.weekType && ` - ${timetable.weekType}`}
+                      </h3>
+
+                      {editingId !== timetable._id && (
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => generatePDF(timetable)}
+                            className="flex items-center px-3 py-1 bg-white text-indigo-600 rounded-md border border-indigo-200 hover:bg-indigo-50 transition duration-200"
                           >
-                            <option value="">Select Type</option>
-                            <option value="physics">Physical</option>
-                            <option value="computer base">Computer Base</option>
-                          </select>
+                            <FiDownload className="mr-1" /> PDF
+                          </button>
+                          <button
+                            onClick={() => handleEdit(timetable)}
+                            className="flex items-center px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"
+                          >
+                            <FiEdit className="mr-1" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(timetable._id)}
+                            className="flex items-center px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200"
+                          >
+                            <FiTrash2 className="mr-1" /> Delete
+                          </button>
                         </div>
                       )}
-                      <div className="form-group">
-                        <label>Day:</label>
-                        <select
-                          value={newModule.day}
-                          onChange={(e) =>
-                            setNewModule({ ...newModule, day: e.target.value })
-                          }
-                        >
-                          {[
-                            "Monday",
-                            "Tuesday",
-                            "Wednesday",
-                            "Thursday",
-                            "Friday",
-                            "Saturday",
-                            "Sunday",
-                          ].map((day) => (
-                            <option key={day} value={day}>
-                              {day}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label>Start Time:</label>
-                        <input
-                          type="time"
-                          value={newModule.startTime}
-                          onChange={(e) =>
-                            setNewModule({
-                              ...newModule,
-                              startTime: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>End Time:</label>
-                        <input
-                          type="time"
-                          value={newModule.endTime}
-                          onChange={(e) =>
-                            setNewModule({
-                              ...newModule,
-                              endTime: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
                     </div>
-                    <button onClick={addNewModule} className="add-btn">
-                      Add Module
-                    </button>
-                  </div>
 
-                  <div className="edit-actions">
-                    <button onClick={saveChanges} className="save-btn">
-                      Save Changes
-                    </button>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="cancel-btn"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <table className="view-table">
-                    <thead>
-                      <tr>
-                        <th>Day</th>
-                        <th>Module Name</th>
-                        <th>Module Code</th>
-                        <th>Venue</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Instructor</th>
-                        {timetable.timetableType !== "All Semester" && (
-                          <th>Exam Type</th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {timetable.modules.map((module, idx) => (
-                        <tr key={idx}>
-                          <td>{module.day}</td>
-                          <td>{module.moduleName}</td>
-                          <td>{module.moduleCode}</td>
-                          <td>{module.venue}</td>
-                          <td>{module.startTime}</td>
-                          <td>{module.endTime}</td>
-                          <td>{module.instructor}</td>
-                          {timetable.timetableType !== "All Semester" && (
-                            <td>{module.examType || "N/A"}</td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    {editingId === timetable._id ? (
+                      <div className="p-6">
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Day
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Module Name
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Module Code
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Venue
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Start Time
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  End Time
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Instructor
+                                </th>
+                                {timetable.timetableType !== "All Semester" && (
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Exam Type
+                                  </th>
+                                )}
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Action
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {editedTimetable?.modules?.map((module, idx) => (
+                                <tr key={idx} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                    <select
+                                      value={module.day}
+                                      onChange={(e) =>
+                                        handleModuleChange(
+                                          idx,
+                                          "day",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="block w-full pl-3 pr-10 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                    >
+                                      {[
+                                        "Monday",
+                                        "Tuesday",
+                                        "Wednesday",
+                                        "Thursday",
+                                        "Friday",
+                                        "Saturday",
+                                        "Sunday",
+                                      ].map((day) => (
+                                        <option key={day} value={day}>
+                                          {day}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                    <input
+                                      type="text"
+                                      value={module.moduleName}
+                                      onChange={(e) =>
+                                        handleModuleChange(
+                                          idx,
+                                          "moduleName",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                    />
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                    <input
+                                      type="text"
+                                      value={module.moduleCode}
+                                      onChange={(e) =>
+                                        handleModuleChange(
+                                          idx,
+                                          "moduleCode",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                    />
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                    <input
+                                      type="text"
+                                      value={module.venue}
+                                      onChange={(e) =>
+                                        handleModuleChange(
+                                          idx,
+                                          "venue",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                    />
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                    <input
+                                      type="time"
+                                      value={module.startTime}
+                                      onChange={(e) =>
+                                        handleModuleChange(
+                                          idx,
+                                          "startTime",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                    />
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                    <input
+                                      type="time"
+                                      value={module.endTime}
+                                      onChange={(e) =>
+                                        handleModuleChange(
+                                          idx,
+                                          "endTime",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                    />
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                    <input
+                                      type="text"
+                                      value={module.instructor}
+                                      onChange={(e) =>
+                                        handleModuleChange(
+                                          idx,
+                                          "instructor",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                    />
+                                  </td>
+                                  {timetable.timetableType !==
+                                    "All Semester" && (
+                                    <td className="px-4 py-3 whitespace-nowrap">
+                                      <select
+                                        value={module.examType || ""}
+                                        onChange={(e) =>
+                                          handleModuleChange(
+                                            idx,
+                                            "examType",
+                                            e.target.value
+                                          )
+                                        }
+                                        className="block w-full pl-3 pr-10 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                      >
+                                        <option value="">Select Type</option>
+                                        <option value="physics">
+                                          Physical
+                                        </option>
+                                        <option value="computer base">
+                                          Computer Base
+                                        </option>
+                                      </select>
+                                    </td>
+                                  )}
+                                  <td className="px-4 py-3 whitespace-nowrap">
+                                    <button
+                                      onClick={() => removeModule(idx)}
+                                      className="text-red-600 hover:text-red-800"
+                                    >
+                                      <FiTrash2 />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
 
-                  <div className="timetable-actions">
-                    <button
-                      onClick={() => generatePDF(timetable)}
-                      className="pdf-btn"
-                    >
-                      Download PDF
-                    </button>
-                    <button
-                      onClick={() => handleEdit(timetable)}
-                      className="edit-btn"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(timetable._id)}
-                      className="delete-btn"
-                    >
-                      Delete
-                    </button>
+                        <div className="mt-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                          <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                            <FiPlus className="mr-2 text-indigo-600" />
+                            Add New Module
+                          </h4>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Module Name
+                              </label>
+                              <input
+                                type="text"
+                                value={newModule.moduleName}
+                                onChange={(e) =>
+                                  setNewModule({
+                                    ...newModule,
+                                    moduleName: e.target.value,
+                                  })
+                                }
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Module Code
+                              </label>
+                              <input
+                                type="text"
+                                value={newModule.moduleCode}
+                                onChange={(e) =>
+                                  setNewModule({
+                                    ...newModule,
+                                    moduleCode: e.target.value,
+                                  })
+                                }
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Instructor
+                              </label>
+                              <input
+                                type="text"
+                                value={newModule.instructor}
+                                onChange={(e) =>
+                                  setNewModule({
+                                    ...newModule,
+                                    instructor: e.target.value,
+                                  })
+                                }
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Venue
+                              </label>
+                              <input
+                                type="text"
+                                value={newModule.venue}
+                                onChange={(e) =>
+                                  setNewModule({
+                                    ...newModule,
+                                    venue: e.target.value,
+                                  })
+                                }
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                              />
+                            </div>
+                            {timetable.timetableType !== "All Semester" && (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Exam Type
+                                </label>
+                                <select
+                                  value={newModule.examType}
+                                  onChange={(e) =>
+                                    setNewModule({
+                                      ...newModule,
+                                      examType: e.target.value,
+                                    })
+                                  }
+                                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                                >
+                                  <option value="">Select Type</option>
+                                  <option value="physics">Physical</option>
+                                  <option value="computer base">
+                                    Computer Base
+                                  </option>
+                                </select>
+                              </div>
+                            )}
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Day
+                              </label>
+                              <select
+                                value={newModule.day}
+                                onChange={(e) =>
+                                  setNewModule({
+                                    ...newModule,
+                                    day: e.target.value,
+                                  })
+                                }
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                              >
+                                {[
+                                  "Monday",
+                                  "Tuesday",
+                                  "Wednesday",
+                                  "Thursday",
+                                  "Friday",
+                                  "Saturday",
+                                  "Sunday",
+                                ].map((day) => (
+                                  <option key={day} value={day}>
+                                    {day}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Start Time
+                              </label>
+                              <input
+                                type="time"
+                                value={newModule.startTime}
+                                onChange={(e) =>
+                                  setNewModule({
+                                    ...newModule,
+                                    startTime: e.target.value,
+                                  })
+                                }
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                End Time
+                              </label>
+                              <input
+                                type="time"
+                                value={newModule.endTime}
+                                onChange={(e) =>
+                                  setNewModule({
+                                    ...newModule,
+                                    endTime: e.target.value,
+                                  })
+                                }
+                                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="mt-4">
+                            <button
+                              onClick={addNewModule}
+                              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                              <FiPlus className="mr-2" />
+                              Add Module
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end space-x-3">
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
+                            <FiX className="mr-2" />
+                            Cancel
+                          </button>
+                          <button
+                            onClick={saveChanges}
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                          >
+                            <FiSave className="mr-2" />
+                            Save Changes
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-6">
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-100">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Day
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Module Name
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Module Code
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Venue
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Start Time
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  End Time
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Instructor
+                                </th>
+                                {timetable.timetableType !== "All Semester" && (
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Exam Type
+                                  </th>
+                                )}
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {timetable.modules.map((module, idx) => (
+                                <tr key={idx} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {module.day}
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {module.moduleName}
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {module.moduleCode}
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {module.venue}
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {module.startTime}
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {module.endTime}
+                                  </td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {module.instructor}
+                                  </td>
+                                  {timetable.timetableType !==
+                                    "All Semester" && (
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                      {module.examType || "N/A"}
+                                    </td>
+                                  )}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </>
-              )}
-            </div>
-          ))}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
+
       <AdminFooter />
+
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          20%,
+          60% {
+            transform: translateX(-5px);
+          }
+          40%,
+          80% {
+            transform: translateX(5px);
+          }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out;
+        }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.4s ease-out;
+        }
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };
