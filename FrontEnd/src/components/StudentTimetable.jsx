@@ -64,12 +64,17 @@ const StudentTimetable = () => {
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
 
+      // Faculty and semester information
       doc.text(`Faculty: ${timetable.faculty || "N/A"}`, 15, 45);
       if (timetable.semester) {
         doc.text(`Semester: ${timetable.semester}`, 15, 52);
       }
       if (timetable.weekType) {
-        doc.text(`Week Type: ${timetable.weekType}`, 15, 59);
+        doc.text(
+          `Week Type: ${timetable.weekType}`,
+          15,
+          timetable.semester ? 59 : 52
+        );
       }
 
       doc.text(
@@ -175,7 +180,6 @@ const StudentTimetable = () => {
       setPdfError(error.message);
     }
   };
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div style={{ color: "red" }}>{error}</div>;
 

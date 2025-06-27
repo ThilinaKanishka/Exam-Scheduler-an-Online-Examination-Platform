@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import AdminHeader from "./AdminPanelHeader";
+import AdminFooter from "./AdminPanelFooter";
 
 const AllTimetable = () => {
   const [timetables, setTimetables] = useState([]);
@@ -308,6 +310,7 @@ const AllTimetable = () => {
 
   return (
     <div className="timetable-admin-container">
+      <AdminHeader />
       <h2>All Generated Timetables</h2>
       {success && <div className="success-message">{success}</div>}
 
@@ -674,6 +677,7 @@ const AllTimetable = () => {
           ))}
         </div>
       )}
+      <AdminFooter />
     </div>
   );
 };
