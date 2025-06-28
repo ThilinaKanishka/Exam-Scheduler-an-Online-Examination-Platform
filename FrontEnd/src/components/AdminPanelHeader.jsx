@@ -89,14 +89,15 @@ function AdminPanelHeader() {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const [activeNav, setActiveNav] = useState("Dashboard");
   const [examAnchorEl, setExamAnchorEl] = useState(null);
+  const [timetableAnchorEl, setTimetableAnchorEl] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const navItems = [
-    { name: "Dashboard", icon: <DashboardIcon /> },
+    { name: "Dashboard", icon: <DashboardIcon />, path: "/Adminpanel" },
     { name: "Courses", icon: <CourseIcon /> },
     { name: "Exams", icon: <ExamIcon />, isDropdown: true },
-    { name: "Timetable", icon: <TimetableIcon /> },
+    { name: "Timetable", icon: <TimetableIcon />, isDropdown: true },
     { name: "Users", icon: <UsersIcon /> },
     { name: "Instructors", icon: <InstructorIcon /> },
     { name: "Reports", icon: <ReportsIcon /> },
@@ -108,6 +109,11 @@ function AdminPanelHeader() {
     { name: "Examination Results", path: "/ResultsPage" },
   ];
 
+  const timetableMenuItems = [
+    { name: "Generate New Timetable", path: "/ScheduleTimetable" },
+    { name: "All Generated Timetables", path: "/AllTimetable" },
+  ];
+
   const dropdownItems = [
     { name: "Profile", icon: <UserIcon /> },
     { name: "Settings", icon: <SettingsIcon /> },
@@ -117,6 +123,7 @@ function AdminPanelHeader() {
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
   const isExamMenuOpen = Boolean(examAnchorEl);
+  const isTimetableMenuOpen = Boolean(timetableAnchorEl);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -143,9 +150,18 @@ function AdminPanelHeader() {
     setExamAnchorEl(null);
   };
 
+  const handleTimetableMenuOpen = (event) => {
+    setTimetableAnchorEl(event.currentTarget);
+  };
+
+  const handleTimetableMenuClose = () => {
+    setTimetableAnchorEl(null);
+  };
+
   const handleNavigation = (path) => {
     navigate(path);
     handleExamMenuClose();
+    handleTimetableMenuClose();
   };
 
   const menuId = "primary-search-account-menu";
@@ -324,6 +340,56 @@ function AdminPanelHeader() {
     </Menu>
   );
 
+  const renderTimetableMenu = (
+    <Menu
+      anchorEl={timetableAnchorEl}
+      open={isTimetableMenuOpen}
+      onClose={handleTimetableMenuClose}
+      TransitionComponent={Fade}
+      PaperProps={{
+        elevation: 8,
+        sx: {
+          mt: 1.5,
+          minWidth: 200,
+          borderRadius: 2,
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.12)",
+          overflow: "visible",
+          "&:before": {
+            content: '""',
+            display: "block",
+            position: "absolute",
+            top: 0,
+            right: 14,
+            width: 10,
+            height: 10,
+            bgcolor: "background.paper",
+            transform: "translateY(-50%) rotate(45deg)",
+            zIndex: 0,
+          },
+        },
+      }}
+    >
+      {timetableMenuItems.map((item) => (
+        <MenuItem
+          key={item.name}
+          onClick={() => {
+            setActiveNav(item.name);
+            handleNavigation(item.path);
+          }}
+          sx={{
+            py: 1.5,
+            px: 2,
+            "&:hover": {
+              backgroundColor: "rgba(25, 118, 210, 0.08)",
+            },
+          }}
+        >
+          {item.name}
+        </MenuItem>
+      ))}
+    </Menu>
+  );
+
   const mobileMenuId = "primary-search-account-menu-mobile";
   const renderMobileMenu = (
     <Menu
@@ -356,6 +422,9 @@ function AdminPanelHeader() {
           selected={activeNav === item.name}
           onClick={() => {
             setActiveNav(item.name);
+            if (item.path) {
+              navigate(item.path);
+            }
             handleMobileMenuClose();
           }}
           sx={{
@@ -453,7 +522,7 @@ function AdminPanelHeader() {
               }}
             >
               {navItems.map((item) => {
-                if (item.isDropdown) {
+                if (item.name === "Exams" && item.isDropdown) {
                   return (
                     <Box key={item.name}>
                       <Button
@@ -482,11 +551,45 @@ function AdminPanelHeader() {
                     </Box>
                   );
                 }
+                if (item.name === "Timetable" && item.isDropdown) {
+                  return (
+                    <Box key={item.name}>
+                      <Button
+                        startIcon={item.icon}
+                        endIcon={<ChevronDownIcon />}
+                        onClick={handleTimetableMenuOpen}
+                        sx={{
+                          px: 2,
+                          color:
+                            activeNav === item.name || isTimetableMenuOpen
+                              ? "white"
+                              : "rgba(255, 255, 255, 0.8)",
+                          backgroundColor:
+                            activeNav === item.name || isTimetableMenuOpen
+                              ? "rgba(255, 255, 255, 0.15)"
+                              : "transparent",
+                          borderRadius: 2,
+                          "&:hover": {
+                            backgroundColor: "rgba(255, 255, 255, 0.15)",
+                          },
+                        }}
+                      >
+                        {item.name}
+                      </Button>
+                      {renderTimetableMenu}
+                    </Box>
+                  );
+                }
                 return (
                   <Button
                     key={item.name}
                     startIcon={item.icon}
-                    onClick={() => setActiveNav(item.name)}
+                    onClick={() => {
+                      setActiveNav(item.name);
+                      if (item.path) {
+                        navigate(item.path);
+                      }
+                    }}
                     sx={{
                       px: 2,
                       color:
