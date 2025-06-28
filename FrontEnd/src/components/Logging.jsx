@@ -308,7 +308,7 @@ function Logging() {
               <p className="text-gray-400 text-sm">
                 Don't have an account?{" "}
                 <Link
-                  to="/register"
+                  to="/Registration"
                   className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
                 >
                   Register here
