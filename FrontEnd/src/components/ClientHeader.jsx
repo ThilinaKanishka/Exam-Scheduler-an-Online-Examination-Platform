@@ -4,12 +4,16 @@ import {
   Home as HomeIcon,
   MenuBook as CourseIcon,
   Assignment as ExamIcon,
+  Schedule as TimetableIcon,
   Settings as SettingsIcon,
   ExitToApp as LogOutIcon,
   ArrowDropDown as ChevronDownIcon,
   AccountCircle as UserIcon,
   NotificationsActive as NotificationActiveIcon,
   Search as SearchIcon,
+  Dashboard as DashboardIcon,
+  Add as AddIcon,
+  ListAlt as ListIcon,
 } from "@mui/icons-material";
 import {
   AppBar,
@@ -34,6 +38,7 @@ import {
 } from "@mui/material";
 import { keyframes } from "@mui/system";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { Link } from "react-router-dom";
 
 const pulseAnimation = keyframes`
   0% { box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.4); }
@@ -71,7 +76,6 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: "inherit",
   "& .MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create("width"),
     width: "100%",
@@ -119,24 +123,45 @@ const theme = createTheme({
   },
 });
 
-function ClientHeader() {
+function ClientHeader({ isAdmin = false }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const [activeNav, setActiveNav] = useState("Home");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const navItems = [
-    { name: "Home", icon: <HomeIcon /> },
-    { name: "Courses", icon: <CourseIcon /> },
-    { name: "Exams", icon: <ExamIcon /> },
-    { name: "Settings", icon: <SettingsIcon /> },
+  const studentNavItems = [
+    { name: "Home", icon: <HomeIcon />, path: "/Home" },
+    { name: "Courses", icon: <CourseIcon />, path: "/courses" },
+    { name: "TimeTable", icon: <TimetableIcon />, path: "/StudentTimetable" },
+    { name: "Exams", icon: <ExamIcon />, path: "/ExamDetailsPage" },
+    { name: "Settings", icon: <SettingsIcon />, path: "/settings" },
   ];
 
+  const adminNavItems = [
+    { name: "DASHBOARD", icon: <DashboardIcon />, path: "/Adminpanel" },
+    {
+      name: "Generate New Timetable",
+      icon: <AddIcon />,
+      path: "/ScheduleTimetable",
+    },
+    {
+      name: "All Generated Timetables",
+      icon: <ListIcon />,
+      path: "/AllTimetable",
+    },
+  ];
+
+  const navItems = isAdmin ? adminNavItems : studentNavItems;
+
   const dropdownItems = [
-    { name: "Profile", icon: <UserIcon /> },
-    { name: "Settings", icon: <SettingsIcon /> },
-    { name: "Notifications", icon: <NotificationActiveIcon /> },
+    { name: "Profile", icon: <UserIcon />, path: "/profile" },
+    { name: "Settings", icon: <SettingsIcon />, path: "/settings" },
+    {
+      name: "Notifications",
+      icon: <NotificationActiveIcon />,
+      path: "/notifications",
+    },
   ];
 
   const isMenuOpen = Boolean(anchorEl);
@@ -214,10 +239,10 @@ function ClientHeader() {
         </Avatar>
         <Box>
           <Typography variant="subtitle1" fontWeight="medium">
-            Thilina Hettiarachchci
+            {isAdmin ? "Admin User" : "Thilina Hettiarachchci"}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Student
+            {isAdmin ? "Administrator" : "Student"}
           </Typography>
         </Box>
       </Box>
@@ -227,6 +252,8 @@ function ClientHeader() {
         <MenuItem
           key={item.name}
           onClick={handleMenuClose}
+          component={Link}
+          to={item.path}
           sx={{
             py: 1.5,
             px: 2,
@@ -319,6 +346,8 @@ function ClientHeader() {
             setActiveNav(item.name);
             handleMobileMenuClose();
           }}
+          component={Link}
+          to={item.path}
           sx={{
             py: 1.5,
             "&.Mui-selected": {
@@ -429,6 +458,8 @@ function ClientHeader() {
                   key={item.name}
                   startIcon={item.icon}
                   onClick={() => setActiveNav(item.name)}
+                  component={Link}
+                  to={item.path}
                   sx={{
                     px: 2,
                     color:
@@ -502,7 +533,7 @@ function ClientHeader() {
                       mr: 1,
                     }}
                   >
-                    TH
+                    {isAdmin ? "AU" : "TH"}
                   </Avatar>
                   <ChevronDownIcon
                     sx={{
@@ -532,7 +563,7 @@ function ClientHeader() {
                     fontWeight: "bold",
                   }}
                 >
-                  TH
+                  {isAdmin ? "AU" : "TH"}
                 </Avatar>
               </IconButton>
             </Box>
