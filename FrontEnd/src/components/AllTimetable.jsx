@@ -439,11 +439,17 @@ const AllTimetable = () => {
                             timetableType: e.target.value,
                           })
                         }
-                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                       >
-                        <option value="">All Types</option>
+                        <option value="" className="text-gray-900">
+                          All Types
+                        </option>
                         {getUniqueValues("timetableType").map((type) => (
-                          <option key={type} value={type}>
+                          <option
+                            key={type}
+                            value={type}
+                            className="text-gray-900"
+                          >
                             {type}
                           </option>
                         ))}
@@ -458,11 +464,17 @@ const AllTimetable = () => {
                         onChange={(e) =>
                           setFilters({ ...filters, faculty: e.target.value })
                         }
-                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                       >
-                        <option value="">All Faculties</option>
+                        <option value="" className="text-gray-900">
+                          All Faculties
+                        </option>
                         {getUniqueValues("faculty").map((faculty) => (
-                          <option key={faculty} value={faculty}>
+                          <option
+                            key={faculty}
+                            value={faculty}
+                            className="text-gray-900"
+                          >
                             {faculty}
                           </option>
                         ))}
@@ -477,11 +489,17 @@ const AllTimetable = () => {
                         onChange={(e) =>
                           setFilters({ ...filters, semester: e.target.value })
                         }
-                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                       >
-                        <option value="">All Semesters</option>
+                        <option value="" className="text-gray-900">
+                          All Semesters
+                        </option>
                         {getUniqueValues("semester").map((semester) => (
-                          <option key={semester} value={semester}>
+                          <option
+                            key={semester}
+                            value={semester}
+                            className="text-gray-900"
+                          >
                             {semester}
                           </option>
                         ))}
@@ -496,11 +514,17 @@ const AllTimetable = () => {
                         onChange={(e) =>
                           setFilters({ ...filters, weekType: e.target.value })
                         }
-                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                       >
-                        <option value="">All Week Types</option>
+                        <option value="" className="text-gray-900">
+                          All Week Types
+                        </option>
                         {getUniqueValues("weekType").map((weekType) => (
-                          <option key={weekType} value={weekType}>
+                          <option
+                            key={weekType}
+                            value={weekType}
+                            className="text-gray-900"
+                          >
                             {weekType}
                           </option>
                         ))}
@@ -628,7 +652,11 @@ const AllTimetable = () => {
                                         "Saturday",
                                         "Sunday",
                                       ].map((day) => (
-                                        <option key={day} value={day}>
+                                        <option
+                                          key={day}
+                                          value={day}
+                                          className="text-gray-900"
+                                        >
                                           {day}
                                         </option>
                                       ))}
@@ -732,11 +760,22 @@ const AllTimetable = () => {
                                         }
                                         className="block w-full pl-3 pr-10 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                                       >
-                                        <option value="">Select Type</option>
-                                        <option value="physics">
+                                        <option
+                                          value=""
+                                          className="text-gray-900"
+                                        >
+                                          Select Type
+                                        </option>
+                                        <option
+                                          value="physics"
+                                          className="text-gray-900"
+                                        >
                                           Physical
                                         </option>
-                                        <option value="computer base">
+                                        <option
+                                          value="computer base"
+                                          className="text-gray-900"
+                                        >
                                           Computer Base
                                         </option>
                                       </select>
@@ -842,9 +881,19 @@ const AllTimetable = () => {
                                   }
                                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-gray-900"
                                 >
-                                  <option value="">Select Type</option>
-                                  <option value="physics">Physical</option>
-                                  <option value="computer base">
+                                  <option value="" className="text-gray-900">
+                                    Select Type
+                                  </option>
+                                  <option
+                                    value="physics"
+                                    className="text-gray-900"
+                                  >
+                                    Physical
+                                  </option>
+                                  <option
+                                    value="computer base"
+                                    className="text-gray-900"
+                                  >
                                     Computer Base
                                   </option>
                                 </select>
@@ -873,7 +922,11 @@ const AllTimetable = () => {
                                   "Saturday",
                                   "Sunday",
                                 ].map((day) => (
-                                  <option key={day} value={day}>
+                                  <option
+                                    key={day}
+                                    value={day}
+                                    className="text-gray-900"
+                                  >
                                     {day}
                                   </option>
                                 ))}
