@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import AdminHeader from "./ClientHeader";
-import AdminFooter from "./ClientFooter";
+import ClienHeader from "./ClientHeader";
+import ClienFooter from "./ClientFooter";
 import {
   AccessTime as ClockIcon,
   Warning as AlertTriangleIcon,
@@ -211,7 +211,7 @@ const ExamDetailsPage = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <AdminHeader />
+      <ClienHeader />
       <Box sx={{ display: "flex", flex: 1 }}>
         {/* Sidebar with branding */}
         <Sidebar>
@@ -876,7 +876,7 @@ const ExamDetailsPage = () => {
           </StyledCard>
         </Box>
       </Box>
-      <AdminFooter />
+      <ClienFooter />
     </Box>
   );
 };

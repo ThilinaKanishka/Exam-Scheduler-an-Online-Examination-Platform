@@ -2,6 +2,20 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import ClienHeader from "./ClientHeader";
+import ClienFooter from "./ClientFooter";
+import {
+  FiDownload,
+  FiFilter,
+  FiSearch,
+  FiCalendar,
+  FiBook,
+  FiUser,
+  FiClock,
+  FiMapPin,
+  FiAward,
+} from "react-icons/fi";
+import { FaUniversity } from "react-icons/fa";
 
 const StudentTimetable = () => {
   const [timetables, setTimetables] = useState([]);
@@ -12,6 +26,7 @@ const StudentTimetable = () => {
   const [error, setError] = useState("");
   const [pdfSuccess, setPdfSuccess] = useState(false);
   const [pdfError, setPdfError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchTimetables = async () => {
@@ -30,6 +45,29 @@ const StudentTimetable = () => {
 
     fetchTimetables();
   }, [faculty, timetableType]);
+
+  useEffect(() => {
+    const results = timetables
+      .map((timetable) => ({
+        ...timetable,
+        modules: timetable.modules.filter(
+          (module) =>
+            module.moduleName
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            module.moduleCode
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            module.instructor
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            module.venue.toLowerCase().includes(searchTerm.toLowerCase())
+        ),
+      }))
+      .filter((timetable) => timetable.modules.length > 0);
+
+    setFilteredTimetables(results);
+  }, [searchTerm, timetables]);
 
   const downloadAsPDF = (timetable) => {
     try {
@@ -180,110 +218,224 @@ const StudentTimetable = () => {
       setPdfError(error.message);
     }
   };
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div style={{ color: "red" }}>{error}</div>;
 
   return (
-    <div>
-      <h2>Student Timetable View</h2>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+      <ClienHeader />
 
-      {pdfSuccess && (
-        <div style={{ color: "green", marginBottom: "10px" }}>
-          PDF generated successfully!
+      <div className="w-full px-4 py-8">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-indigo-800 mb-2">
+            Student Timetable View
+          </h2>
+          <p className="text-indigo-600">
+            View and manage your academic schedules
+          </p>
         </div>
-      )}
-      {pdfError && (
-        <div style={{ color: "red", marginBottom: "10px" }}>{pdfError}</div>
-      )}
 
-      <div style={{ marginBottom: "20px" }}>
-        <label>Faculty: </label>
-        <select value={faculty} onChange={(e) => setFaculty(e.target.value)}>
-          <option value="computing">Computing</option>
-          <option value="engineering">Engineering</option>
-          <option value="business">Business</option>
-          <option value="nursing">Nursing</option>
-        </select>
+        {pdfSuccess && (
+          <div className="fixed top-20 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-lg animate-fade-in-out z-50">
+            PDF generated successfully!
+          </div>
+        )}
+        {pdfError && (
+          <div className="fixed top-20 right-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg animate-fade-in-out z-50">
+            {pdfError}
+          </div>
+        )}
 
-        <label style={{ marginLeft: "10px" }}>Timetable Type: </label>
-        <select
-          value={timetableType}
-          onChange={(e) => setTimetableType(e.target.value)}
-        >
-          <option value="All">All Types</option>
-          <option value="All Semester">All Semester</option>
-          <option value="MID Exam">MID Exam</option>
-          <option value="Final Exam">Final Exam</option>
-          <option value="Peapeat-MID">Peapeat-MID</option>
-          <option value="Peapeat-Final">Peapeat-Final</option>
-        </select>
-      </div>
-
-      {filteredTimetables.length === 0 ? (
-        <div>No timetables found for the selected criteria</div>
-      ) : (
-        <div>
-          {filteredTimetables.map((timetable) => (
-            <div
-              key={timetable._id}
-              style={{
-                border: "1px solid #ccc",
-                padding: "10px",
-                margin: "10px 0",
-              }}
-            >
-              <h3>
-                {timetable.timetableType} - {timetable.faculty}
-                {timetable.semester && ` - ${timetable.semester}`}
-                {timetable.weekType && ` - ${timetable.weekType}`}
-                {timetable.examType && ` - ${timetable.examType}`}
-              </h3>
-
-              <table border="1" style={{ width: "100%" }}>
-                <thead>
-                  <tr>
-                    <th>Module Name</th>
-                    <th>Module Code</th>
-                    <th>Instructor</th>
-                    <th>Venue</th>
-                    <th>Day</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    {timetable.timetableType !== "All Semester" && (
-                      <th>Exam Type</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {timetable.modules.map((module, idx) => (
-                    <tr key={idx}>
-                      <td>{module.moduleName}</td>
-                      <td>{module.moduleCode}</td>
-                      <td>{module.instructor}</td>
-                      <td>{module.venue}</td>
-                      <td>{module.day}</td>
-                      <td>{module.startTime}</td>
-                      <td>{module.endTime}</td>
-                      {timetable.timetableType !== "All Semester" && (
-                        <td>
-                          {module.examType || timetable.examType || "N/A"}
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <button
-                onClick={() => downloadAsPDF(timetable)}
-                style={{ marginTop: "10px" }}
-              >
-                Download as PDF
-              </button>
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <div className="flex items-center space-x-2">
+              <FiFilter className="text-indigo-600 text-xl" />
+              <h3 className="text-lg font-semibold text-gray-700">Filters</h3>
             </div>
-          ))}
+
+            <div className="relative w-full md:w-64">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search modules..."
+                className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <FaUniversity className="inline mr-2 text-indigo-600" />
+                Faculty
+              </label>
+              <select
+                value={faculty}
+                onChange={(e) => setFaculty(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="computing">Computing</option>
+                <option value="engineering">Engineering</option>
+                <option value="business">Business</option>
+                <option value="nursing">Nursing</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                <FiCalendar className="inline mr-2 text-indigo-600" />
+                Timetable Type
+              </label>
+              <select
+                value={timetableType}
+                onChange={(e) => setTimetableType(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="All">All Types</option>
+                <option value="All Semester">All Semester</option>
+                <option value="MID Exam">MID Exam</option>
+                <option value="Final Exam">Final Exam</option>
+                <option value="Peapeat-MID">Peapeat-MID</option>
+                <option value="Peapeat-Final">Peapeat-Final</option>
+              </select>
+            </div>
+          </div>
         </div>
-      )}
+
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
+            {error}
+          </div>
+        ) : filteredTimetables.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+            <FiBook className="mx-auto text-4xl text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              No timetables found
+            </h3>
+            <p className="text-gray-500">
+              Try adjusting your filters or search term
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {filteredTimetables.map((timetable) => (
+              <div
+                key={timetable._id}
+                className="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl"
+              >
+                <div className="bg-indigo-600 px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between">
+                  <h3 className="text-xl font-bold text-white">
+                    {timetable.timetableType} - {timetable.faculty}
+                    {timetable.semester && ` - ${timetable.semester}`}
+                    {timetable.weekType && ` - ${timetable.weekType}`}
+                    {timetable.examType && ` - ${timetable.examType}`}
+                  </h3>
+                  <button
+                    onClick={() => downloadAsPDF(timetable)}
+                    className="mt-2 md:mt-0 px-4 py-2 bg-white text-indigo-600 rounded-lg font-medium flex items-center hover:bg-indigo-50 transition-colors"
+                  >
+                    <FiDownload className="mr-2" />
+                    Download as PDF
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <FiBook className="inline mr-1" />
+                          Module
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Code
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <FiUser className="inline mr-1" />
+                          Instructor
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <FiMapPin className="inline mr-1" />
+                          Venue
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Day
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <FiClock className="inline mr-1" />
+                          Time
+                        </th>
+                        {timetable.timetableType !== "All Semester" && (
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <FiAward className="inline mr-1" />
+                            Exam Type
+                          </th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {timetable.modules.map((module, idx) => (
+                        <tr
+                          key={idx}
+                          className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {module.moduleName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {module.moduleCode}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {module.instructor}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {module.venue}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {module.day}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {module.startTime} - {module.endTime}
+                          </td>
+                          {timetable.timetableType !== "All Semester" && (
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {module.examType || timetable.examType || "N/A"}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <ClienFooter />
+
+      {/* Add custom animations to tailwind config */}
+      <style jsx global>{`
+        @keyframes fadeInOut {
+          0%,
+          100% {
+            opacity: 0;
+          }
+          10%,
+          90% {
+            opacity: 1;
+          }
+        }
+        .animate-fade-in-out {
+          animation: fadeInOut 3s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };
