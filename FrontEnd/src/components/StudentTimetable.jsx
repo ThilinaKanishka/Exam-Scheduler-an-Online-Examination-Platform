@@ -200,7 +200,7 @@ const StudentTimetable = () => {
         {/* Page Title - Full Width */}
         <div className="w-full mb-8">
           <h1 className="text-4xl font-bold text-gray-900 text-center">
-            Student Timetable Management
+            Student Timetables
           </h1>
           <p className="text-lg text-gray-600 text-center mt-2">
             View and download academic timetables by faculty and type
