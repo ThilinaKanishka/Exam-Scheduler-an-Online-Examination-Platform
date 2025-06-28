@@ -292,7 +292,7 @@ const StudentTimetable = () => {
                 Faculty Selection
               </label>
               <select
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-black"
                 value={faculty}
                 onChange={(e) => setFaculty(e.target.value)}
               >
@@ -308,7 +308,7 @@ const StudentTimetable = () => {
                 Timetable Type
               </label>
               <select
-                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-black"
                 value={timetableType}
                 onChange={(e) => setTimetableType(e.target.value)}
               >
@@ -499,7 +499,7 @@ const StudentTimetable = () => {
                             Module Details
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Code
+                            Module Code
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Instructor

@@ -15,12 +15,15 @@ import {
   FiHome,
   FiClock,
   FiChevronDown,
+  FiSearch,
+  FiFilter,
 } from "react-icons/fi";
 import AdminHeader from "./AdminPanelHeader";
 import AdminFooter from "./AdminPanelFooter";
 
 const AllTimetable = () => {
   const [timetables, setTimetables] = useState([]);
+  const [filteredTimetables, setFilteredTimetables] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editedTimetable, setEditedTimetable] = useState(null);
   const [newModule, setNewModule] = useState({
@@ -36,6 +39,14 @@ const AllTimetable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState({
+    timetableType: "",
+    faculty: "",
+    semester: "",
+    weekType: "",
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const fetchTimetables = async () => {
@@ -44,6 +55,7 @@ const AllTimetable = () => {
           "http://localhost:5000/api/timetables"
         );
         setTimetables(response.data);
+        setFilteredTimetables(response.data);
         setLoading(false);
       } catch (err) {
         setError(err.response?.data?.error || "Failed to fetch timetables");
@@ -53,6 +65,52 @@ const AllTimetable = () => {
 
     fetchTimetables();
   }, []);
+
+  useEffect(() => {
+    filterTimetables();
+  }, [searchTerm, filters, timetables]);
+
+  const filterTimetables = () => {
+    let results = [...timetables];
+
+    // Apply search term filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      results = results.filter((timetable) => {
+        return (
+          timetable.faculty?.toLowerCase().includes(term) ||
+          timetable.timetableType?.toLowerCase().includes(term) ||
+          timetable.semester?.toLowerCase().includes(term) ||
+          timetable.weekType?.toLowerCase().includes(term) ||
+          timetable.modules.some(
+            (module) =>
+              module.moduleName?.toLowerCase().includes(term) ||
+              module.moduleCode?.toLowerCase().includes(term) ||
+              module.instructor?.toLowerCase().includes(term) ||
+              module.venue?.toLowerCase().includes(term)
+          )
+        );
+      });
+    }
+
+    // Apply other filters
+    if (filters.timetableType) {
+      results = results.filter(
+        (t) => t.timetableType === filters.timetableType
+      );
+    }
+    if (filters.faculty) {
+      results = results.filter((t) => t.faculty === filters.faculty);
+    }
+    if (filters.semester) {
+      results = results.filter((t) => t.semester === filters.semester);
+    }
+    if (filters.weekType) {
+      results = results.filter((t) => t.weekType === filters.weekType);
+    }
+
+    setFilteredTimetables(results);
+  };
 
   const handleEdit = (timetable) => {
     setEditingId(timetable._id);
@@ -298,6 +356,21 @@ const AllTimetable = () => {
     }
   };
 
+  const resetFilters = () => {
+    setFilters({
+      timetableType: "",
+      faculty: "",
+      semester: "",
+      weekType: "",
+    });
+    setSearchTerm("");
+  };
+
+  // Get unique values for filter dropdowns
+  const getUniqueValues = (key) => {
+    return [...new Set(timetables.map((t) => t[key]).filter(Boolean))];
+  };
+
   if (loading)
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex items-center justify-center">
@@ -319,6 +392,125 @@ const AllTimetable = () => {
           </div>
 
           <div className="p-6">
+            {/* Search and Filter Section */}
+            <div className="mb-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="relative flex-grow">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiSearch className="text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search timetables..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <FiFilter className="mr-2" />
+                    {showFilters ? "Hide Filters" : "Show Filters"}
+                  </button>
+                  <button
+                    onClick={resetFilters}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </div>
+
+              {showFilters && (
+                <div className="mt-4 bg-gray-50 p-4 rounded-md border border-gray-200">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Timetable Type
+                      </label>
+                      <select
+                        value={filters.timetableType}
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            timetableType: e.target.value,
+                          })
+                        }
+                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      >
+                        <option value="">All Types</option>
+                        {getUniqueValues("timetableType").map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Faculty
+                      </label>
+                      <select
+                        value={filters.faculty}
+                        onChange={(e) =>
+                          setFilters({ ...filters, faculty: e.target.value })
+                        }
+                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      >
+                        <option value="">All Faculties</option>
+                        {getUniqueValues("faculty").map((faculty) => (
+                          <option key={faculty} value={faculty}>
+                            {faculty}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Semester
+                      </label>
+                      <select
+                        value={filters.semester}
+                        onChange={(e) =>
+                          setFilters({ ...filters, semester: e.target.value })
+                        }
+                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      >
+                        <option value="">All Semesters</option>
+                        {getUniqueValues("semester").map((semester) => (
+                          <option key={semester} value={semester}>
+                            {semester}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Week Type
+                      </label>
+                      <select
+                        value={filters.weekType}
+                        onChange={(e) =>
+                          setFilters({ ...filters, weekType: e.target.value })
+                        }
+                        className="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                      >
+                        <option value="">All Week Types</option>
+                        {getUniqueValues("weekType").map((weekType) => (
+                          <option key={weekType} value={weekType}>
+                            {weekType}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {error && (
               <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded animate-shake">
                 <p>{error}</p>
@@ -331,13 +523,15 @@ const AllTimetable = () => {
               </div>
             )}
 
-            {timetables.length === 0 ? (
+            {filteredTimetables.length === 0 ? (
               <div className="text-center py-12 text-gray-600">
-                No timetables found. Create one to get started.
+                {timetables.length === 0
+                  ? "No timetables found. Create one to get started."
+                  : "No timetables match your search criteria."}
               </div>
             ) : (
               <div className="space-y-8">
-                {timetables.map((timetable) => (
+                {filteredTimetables.map((timetable) => (
                   <div
                     key={timetable._id}
                     className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden"
